@@ -17,30 +17,34 @@ export default function DishReel({ items, selectedId, isDrawing, rollKey = '' }:
   const shouldReduceMotion = useReducedMotion()
   const rolling = isDrawing || Boolean(rollKey)
   const shellRef = useRef<HTMLDivElement>(null)
+  const windowRef = useRef<HTMLDivElement>(null)
   const trackRef = useRef<HTMLDivElement>(null)
   const [targetX, setTargetX] = useState(0)
   const loopCount = 6
   const selectedIndex = getPointerIndex(items, selectedId)
   const repeatedItems = Array.from({ length: loopCount }, (_, loop) => items.map((dish, index) => ({ dish, key: `${dish.id}-${loop}-${index}` }))).flat()
   const targetIndex = Math.max(items.length * (loopCount - 1) + selectedIndex, 0)
-  const animationX = rolling ? targetX : 0
+  // Keep the reel parked on the winning tile after the spin completes.
+  // Resetting to 0 here makes the track snap back to its first item.
+  const animationX = targetX
 
   useLayoutEffect(() => {
-    const shell = shellRef.current
+    const window = windowRef.current
     const track = trackRef.current
-    const firstTile = track?.firstElementChild as HTMLElement | null
-    if (!shell || !track || !firstTile || !items.length) return
+    const targetTile = track?.children[targetIndex] as HTMLElement | undefined
+    if (!window || !track || !targetTile || !items.length) return
 
-    const gap = Number.parseFloat(getComputedStyle(track).gap) || 0
-    const step = firstTile.getBoundingClientRect().width + gap
-    const centerOffset = (shell.getBoundingClientRect().width - firstTile.getBoundingClientRect().width) / 2
-    setTargetX(centerOffset - targetIndex * step)
+    const windowRect = window.getBoundingClientRect()
+    const targetRect = targetTile.getBoundingClientRect()
+    const targetCenter = targetRect.left + targetRect.width / 2
+    const windowCenter = windowRect.left + windowRect.width / 2
+    setTargetX(windowCenter - targetCenter)
   }, [items.length, selectedId, targetIndex, rollKey])
 
   return (
     <div ref={shellRef} className="reel-shell" aria-label="Reel món ăn">
       <div className="reel-pointer" aria-hidden="true" />
-      <div className={`reel-window${rolling ? ' reel-window-rolling' : ''}`}>
+      <div ref={windowRef} className={`reel-window${rolling ? ' reel-window-rolling' : ''}`}>
         <div className="reel-target-line" data-testid="reel-target-line" aria-hidden="true" />
         {items.length === 0 ? <div className="reel-empty">SELECT YOUR LOADOUT</div> : (
           <motion.div
