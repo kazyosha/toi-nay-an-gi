@@ -11,6 +11,12 @@ describe('DishReel', () => {
     await waitFor(() => expect(screen.getByTestId('dish-reel-track')).toHaveClass('reel-track-rolling'))
   })
 
+  it('shows a center target while the reel is moving', () => {
+    render(<DishReel items={[dish]} selectedId="pho" isDrawing rollKey="draw-rolling" />)
+
+    expect(screen.getByTestId('reel-target-line')).toBeInTheDocument()
+  })
+
   it('renders a long continuous strip instead of leaving empty reel space', () => {
     render(<DishReel items={[dish]} selectedId="pho" isDrawing={false} rollKey="draw-2" />)
 
