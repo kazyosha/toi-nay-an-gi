@@ -27,6 +27,10 @@ export async function listDishes(filters: {
   })
 }
 
+export async function getDish(id: string) {
+  return prisma.dish.findUnique({ where: { id } })
+}
+
 function toDishData(input: ValidatedDishInput) {
   return { ...input, description: input.description || null }
 }

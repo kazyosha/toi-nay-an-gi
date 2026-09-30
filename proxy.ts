@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const hasCookie = Boolean(request.cookies.get('food-case-admin')?.value)
   const isLogin = request.nextUrl.pathname === '/admin/login'
   const isApi = request.nextUrl.pathname.startsWith('/api/admin')
