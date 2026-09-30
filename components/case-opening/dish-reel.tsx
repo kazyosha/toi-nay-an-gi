@@ -50,7 +50,7 @@ export default function DishReel({ items, selectedId, isDrawing, rollKey = '' }:
             transition={rolling && !shouldReduceMotion ? { duration: 2.4, ease: [0.08, 0.72, 0.16, 1] } : { duration: 0.15 }}
           >
             {repeatedItems.map(({ dish, key }) => (
-              <DishTile key={key} dish={dish} featured={!rolling && dish.id === selectedId} />
+              <DishTile key={key} dish={dish} featured={!isDrawing && dish.id === selectedId} />
             ))}
           </motion.div>
         )}

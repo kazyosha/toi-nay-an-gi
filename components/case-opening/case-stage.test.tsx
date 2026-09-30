@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import CaseStage from './case-stage'
 
@@ -32,6 +32,16 @@ describe('CaseStage', () => {
     expect(screen.getByRole('heading', { name: /để chiếc hòm quyết định/i })).toBeInTheDocument()
     expect(screen.getByRole('group', { name: /nhóm món/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /mở hòm/i })).toBeEnabled()
+  })
+
+  it('loads a visible preview strip on first render', async () => {
+    render(<CaseStage />)
+
+    await waitFor(() => expect(within(screen.getByLabelText('Reel món ăn')).getAllByRole('article').length).toBeGreaterThan(0))
+    expect(fetch).toHaveBeenCalledWith('/api/draw', expect.objectContaining({
+      method: 'POST',
+      body: JSON.stringify({ categories: [] }),
+    }))
   })
 
   it('shows loading then reveals the selected dish after a draw', async () => {

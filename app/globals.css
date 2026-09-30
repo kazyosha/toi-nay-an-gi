@@ -75,8 +75,6 @@ a { color: inherit; text-decoration: none; }
 .reel-window::before { background: linear-gradient(90deg, rgba(9, 7, 21, 0.92), transparent); }
 .reel-window::after { background: linear-gradient(270deg, rgba(9, 7, 21, 0.92), transparent); left: auto; right: 0; }
 .reel-track { display: flex; gap: 0.8rem; justify-content: center; min-height: 185px; transform: translateZ(0); will-change: transform; }
-.reel-track-rolling .dish-tile { filter: saturate(0.72) brightness(0.82); }
-.reel-track-rolling .dish-tile-featured { filter: saturate(1.05) brightness(1); }
 .reel-empty { align-items: center; color: rgba(167, 160, 196, 0.65); display: flex; font-family: monospace; font-size: 0.75rem; justify-content: center; letter-spacing: 0.2em; min-height: 185px; width: 100%; }
 .dish-tile { background: linear-gradient(180deg, rgba(39, 31, 75, 0.95), rgba(24, 18, 48, 0.95)); border: 1px solid rgba(185, 161, 255, 0.14); flex: 0 0 128px; padding: 0.55rem; transform: skewY(-2deg); transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease; }
 .dish-tile-featured { border-color: var(--accent-bright); box-shadow: 0 0 34px rgba(239, 102, 218, 0.26), inset 0 0 20px rgba(195, 72, 232, 0.12); transform: translateY(-7px) skewY(-2deg); }

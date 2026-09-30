@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { ShieldCheck, Sparkle } from '@phosphor-icons/react'
 import type { DishCategory, DishRecord } from '@/lib/dishes/types'
@@ -18,9 +18,29 @@ export default function CaseStage() {
   const [draw, setDraw] = useState<DrawResponse | null>(null)
   const [status, setStatus] = useState<'idle' | 'drawing' | 'revealed' | 'error'>('idle')
   const [error, setError] = useState('')
+  const previewController = useRef<AbortController | null>(null)
   const reelKey = draw?.reelItems.map((item, index) => `${item.id}-${index}`).join('|') ?? ''
 
+  useEffect(() => {
+    const controller = new AbortController()
+    previewController.current = controller
+
+    fetch('/api/draw', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ categories: [] }),
+      signal: controller.signal,
+    }).then(async (response) => {
+      if (!response.ok) return
+      const body = await response.json()
+      if (!controller.signal.aborted) setDraw(body as DrawResponse)
+    }).catch(() => undefined)
+
+    return () => controller.abort()
+  }, [])
+
   async function openCase() {
+    previewController.current?.abort()
     setStatus('drawing')
     setError('')
 
