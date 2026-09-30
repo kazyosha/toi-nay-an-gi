@@ -16,6 +16,13 @@ enum DishCategory {
   OTHER
 }
 
+enum MealTime {
+  BREAKFAST
+  LUNCH
+  DINNER
+  LATE_NIGHT
+}
+
 model Dish {
   id          String       @id @default(cuid())
   name        String
@@ -25,6 +32,10 @@ model Dish {
   description String?
   spiceLevel  Int          @default(0)
   weight      Int          @default(1)
+  isVegetarian Boolean      @default(false)
+  priceLevel  Int          @default(1)
+  prepTimeMinutes Int       @default(30)
+  mealTimes   MealTime[]    @default([DINNER])
   isActive    Boolean      @default(true)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt

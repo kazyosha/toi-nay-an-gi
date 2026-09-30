@@ -9,6 +9,10 @@ const validDish = {
   description: 'Cơm tấm thơm với sườn nướng.',
   spiceLevel: 1,
   weight: 3,
+  isVegetarian: false,
+  priceLevel: 1,
+  prepTimeMinutes: 30,
+  mealTimes: ['DINNER'],
   isActive: true,
 }
 

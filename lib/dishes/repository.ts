@@ -1,12 +1,25 @@
-import type { DishCategory } from './types'
+import type { DishCategory, DrawFilters } from './types'
 import type { ValidatedDishInput } from './validation'
 import { prisma } from '@/lib/db/prisma'
 
-export async function listActiveDishes(categories: DishCategory[] = []) {
+export async function listActiveDishes(filters: Partial<DrawFilters> | DishCategory[] = {}) {
+  const normalized = Array.isArray(filters) ? { categories: filters } : filters
+
   return prisma.dish.findMany({
     where: {
       isActive: true,
-      ...(categories.length > 0 ? { category: { in: categories } } : {}),
+      ...(normalized.categories?.length ? { category: { in: normalized.categories } } : {}),
+      ...(typeof normalized.isVegetarian === 'boolean' ? { isVegetarian: normalized.isVegetarian } : {}),
+      ...(normalized.priceLevels?.length ? { priceLevel: { in: normalized.priceLevels } } : {}),
+      ...(normalized.maxPrepTimeMinutes ? { prepTimeMinutes: { lte: normalized.maxPrepTimeMinutes } } : {}),
+      ...(normalized.mealTimes?.length ? { mealTimes: { hasSome: normalized.mealTimes } } : {}),
+      ...(typeof normalized.maxSpiceLevel === 'number' ? { spiceLevel: { lte: normalized.maxSpiceLevel } } : {}),
+      ...((normalized.includeDishIds?.length || normalized.excludeDishIds?.length) ? {
+        AND: [
+          ...(normalized.includeDishIds?.length ? [{ id: { in: normalized.includeDishIds } }] : []),
+          ...(normalized.excludeDishIds?.length ? [{ id: { notIn: normalized.excludeDishIds } }] : []),
+        ],
+      } : {}),
     },
     orderBy: { name: 'asc' },
     select: {
@@ -17,6 +30,10 @@ export async function listActiveDishes(categories: DishCategory[] = []) {
       description: true,
       spiceLevel: true,
       weight: true,
+      isVegetarian: true,
+      priceLevel: true,
+      prepTimeMinutes: true,
+      mealTimes: true,
     },
   })
 }
