@@ -4,6 +4,7 @@ import { motion, useReducedMotion } from 'motion/react'
 import { useLayoutEffect, useRef, useState } from 'react'
 import type { DishRecord } from '@/lib/dishes/types'
 import DishTile from './dish-tile'
+import { getPointerIndex } from './reel-target'
 
 type DishReelProps = {
   items: Array<Pick<DishRecord, 'id' | 'name' | 'imageUrl' | 'category'>>
@@ -19,7 +20,7 @@ export default function DishReel({ items, selectedId, isDrawing, rollKey = '' }:
   const trackRef = useRef<HTMLDivElement>(null)
   const [targetX, setTargetX] = useState(0)
   const loopCount = 6
-  const selectedIndex = Math.max(items.findIndex((item) => item.id === selectedId), 0)
+  const selectedIndex = getPointerIndex(items, selectedId)
   const repeatedItems = Array.from({ length: loopCount }, (_, loop) => items.map((dish, index) => ({ dish, key: `${dish.id}-${loop}-${index}` }))).flat()
   const targetIndex = Math.max(items.length * (loopCount - 1) + selectedIndex, 0)
   const animationX = rolling ? targetX : 0
