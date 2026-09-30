@@ -3,13 +3,14 @@
 import { CaretLeft, CaretRight, MagnifyingGlass, X } from '@phosphor-icons/react'
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
-import type { DishRecord } from '@/lib/dishes/types'
+import { dishCategories, type DishCategory, type DishRecord } from '@/lib/dishes/types'
 import DeleteDishButton from './delete-dish-button'
 
 const categoryLabels: Record<DishRecord['category'], string> = { RICE: 'Cơm', NOODLE: 'Mì', SOUP: 'Bún phở', SNACK: 'Ăn vặt', DRINK: 'Đồ uống', OTHER: 'Khác' }
 
 export default function DishTable({ dishes }: { dishes: DishRecord[] }) {
   const [query, setQuery] = useState('')
+  const [category, setCategory] = useState<DishCategory | ''>('')
   const [sort, setSort] = useState('updated-desc')
   const [page, setPage] = useState(1)
   const pageSize = 5
@@ -17,6 +18,7 @@ export default function DishTable({ dishes }: { dishes: DishRecord[] }) {
   const filteredDishes = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase('vi-VN')
     const result = dishes.filter((dish) => {
+      if (category && dish.category !== category) return false
       if (!normalizedQuery) return true
       return `${dish.name} ${dish.slug}`.toLocaleLowerCase('vi-VN').includes(normalizedQuery)
     })
@@ -28,7 +30,7 @@ export default function DishTable({ dishes }: { dishes: DishRecord[] }) {
       if (sort === 'status') return Number(b.isActive) - Number(a.isActive) || a.name.localeCompare(b.name, 'vi')
       return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
     })
-  }, [dishes, query, sort])
+  }, [category, dishes, query, sort])
 
   const totalPages = Math.max(1, Math.ceil(filteredDishes.length / pageSize))
   const currentPage = Math.min(page, totalPages)
@@ -50,6 +52,12 @@ export default function DishTable({ dishes }: { dishes: DishRecord[] }) {
             <option value="name-desc">Tên Z → A</option>
             <option value="weight-desc">Trọng số cao nhất</option>
             <option value="status">Đang bật trước</option>
+          </select>
+        </label>
+        <label className="admin-sort admin-category-filter">Danh mục
+          <select aria-label="Danh mục" value={category} onChange={(event) => { setCategory(event.target.value as DishCategory | ''); setPage(1) }}>
+            <option value="">Tất cả danh mục</option>
+            {dishCategories.map((value) => <option key={value} value={value}>{categoryLabels[value]}</option>)}
           </select>
         </label>
       </div>

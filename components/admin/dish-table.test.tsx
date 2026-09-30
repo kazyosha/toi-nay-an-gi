@@ -7,7 +7,7 @@ const dishes = Array.from({ length: 6 }, (_, index) => ({
   name: index === 5 ? 'Phở bò' : `Món ${index + 1}`,
   slug: `mon-${index + 1}`,
   imageUrl: `https://images.example.com/${index}.jpg`,
-  category: 'RICE' as const,
+  category: index === 5 ? 'SOUP' as const : 'RICE' as const,
   description: null,
   spiceLevel: 0,
   weight: index + 1,
@@ -37,5 +37,15 @@ describe('DishTable', () => {
     fireEvent.change(screen.getByLabelText('Sắp xếp'), { target: { value: 'weight-desc' } })
     const rows = screen.getAllByRole('row')
     expect(rows[1]).toHaveTextContent('Phở bò')
+  })
+
+  it('filters dishes by category without reloading the list', () => {
+    render(<DishTable dishes={dishes} />)
+
+    fireEvent.change(screen.getByLabelText('Danh mục'), { target: { value: 'SOUP' } })
+
+    expect(screen.getAllByRole('row')).toHaveLength(2)
+    expect(screen.getByText('Phở bò')).toBeInTheDocument()
+    expect(screen.getByText('1 món trong kho')).toBeInTheDocument()
   })
 })
