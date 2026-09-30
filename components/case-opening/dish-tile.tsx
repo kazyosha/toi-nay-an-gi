@@ -1,4 +1,5 @@
 import type { DishRecord } from '@/lib/dishes/types'
+import DishImage from './dish-image'
 
 type DishTileProps = {
   dish: Pick<DishRecord, 'id' | 'name' | 'imageUrl' | 'category'>
@@ -18,7 +19,13 @@ export default function DishTile({ dish, featured = false }: DishTileProps) {
   return (
     <article className={`dish-tile${featured ? ' dish-tile-featured' : ''}`}>
       <div className="dish-tile-image-wrap">
-        <img className="dish-tile-image" src={dish.imageUrl} alt={dish.name} />
+        <DishImage
+          className="dish-tile-image"
+          src={dish.imageUrl}
+          alt={dish.name}
+          fill
+          sizes="(max-width: 640px) 96px, 128px"
+        />
         <span className="dish-tile-category">{categoryLabels[dish.category]}</span>
       </div>
       <p className="dish-tile-name">{dish.name}</p>

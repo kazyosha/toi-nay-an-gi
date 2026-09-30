@@ -22,4 +22,10 @@ describe('DishReel', () => {
 
     expect(screen.getAllByRole('article').length).toBeGreaterThan(3)
   })
+
+  it('lazy-loads reel images so offscreen dishes do not block the first paint', () => {
+    render(<DishReel items={[dish]} selectedId="pho" isDrawing={false} />)
+
+    expect(screen.getAllByRole('img')[0]).toHaveAttribute('loading', 'lazy')
+  })
 })

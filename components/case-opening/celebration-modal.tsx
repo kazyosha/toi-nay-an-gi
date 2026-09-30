@@ -3,6 +3,7 @@
 import { Sparkle, X } from '@phosphor-icons/react'
 import { useEffect, type CSSProperties } from 'react'
 import type { DishRecord } from '@/lib/dishes/types'
+import DishImage from './dish-image'
 
 type CelebrationDish = Pick<DishRecord, 'name' | 'description' | 'imageUrl' | 'spiceLevel'>
 
@@ -47,7 +48,7 @@ export default function CelebrationModal({ dish, onClose }: CelebrationModalProp
         <div className="celebration-icon"><Sparkle size={26} weight="fill" aria-hidden="true" /></div>
         <p className="celebration-kicker">CASE OPENED // WINNER</p>
         <p className="celebration-title">Chúc mừng!</p>
-        <img src={dish.imageUrl} alt={dish.name} className="celebration-image" />
+        <DishImage src={dish.imageUrl} alt={dish.name} className="celebration-image" width={150} height={150} />
         <h2>{dish.name}</h2>
         <p className="celebration-description">{dish.description || 'Một lựa chọn đáng thử cho tối nay.'}</p>
         <button type="button" className="primary-button celebration-action" onClick={onClose}>Đóng</button>

@@ -1,5 +1,6 @@
 import { ArrowClockwise, Fire } from '@phosphor-icons/react'
 import type { DishRecord } from '@/lib/dishes/types'
+import DishImage from './dish-image'
 
 type RevealPanelProps = {
   dish: Pick<DishRecord, 'name' | 'description' | 'imageUrl' | 'spiceLevel'> | null
@@ -13,7 +14,7 @@ export default function RevealPanel({ dish, onDrawAgain }: RevealPanelProps) {
     <section className="reveal-panel" aria-live="polite" aria-label="Món được chọn">
       <div className="reveal-label">MÓN TRÚNG HÔM NAY</div>
       <div className="reveal-content">
-        <img src={dish.imageUrl} alt={dish.name} className="reveal-image" />
+        <DishImage src={dish.imageUrl} alt={dish.name} className="reveal-image" width={600} height={600} sizes="(max-width: 640px) 100vw, 150px" />
         <div>
           <p className="reveal-kicker">CASE OPENED</p>
           <h2>{dish.name}</h2>
