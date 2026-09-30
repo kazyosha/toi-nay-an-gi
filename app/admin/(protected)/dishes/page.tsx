@@ -9,7 +9,7 @@ export default async function AdminDishesPage() {
 
   return (
     <main className="admin-page">
-      <div className="admin-page-heading"><div><p className="eyebrow">DISH INVENTORY</p><h1>Món ăn</h1></div><Link className="admin-primary-link" href="/admin/dishes/new">+ Thêm món</Link></div>
+      <div className="admin-page-heading"><div><p className="eyebrow">DISH INVENTORY</p><h1>Món ăn</h1></div><Link className="admin-primary-link" href="/admin/dishes/new" prefetch><span aria-hidden="true">+</span><span>Thêm món</span></Link></div>
       <p className="admin-intro">Bật, tắt và cân chỉnh trọng số cho những món xuất hiện khi mở hòm.</p>
       <DishTable dishes={dishes} />
     </main>
