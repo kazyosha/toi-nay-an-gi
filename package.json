@@ -12,10 +12,14 @@
     "test:e2e": "playwright test",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^6.19.0",
+    "@prisma/client": "^6.19.0",
     "next": "latest",
+    "pg": "^8.23.0",
     "react": "latest",
     "react-dom": "latest",
     "zod": "latest"
@@ -34,6 +38,7 @@
     "eslint-config-next": "latest",
     "jsdom": "latest",
     "postcss": "latest",
+    "prisma": "6.19.0",
     "tailwindcss": "latest",
     "tsx": "latest",
     "typescript": "latest",

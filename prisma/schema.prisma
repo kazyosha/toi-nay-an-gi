@@ -1,0 +1,35 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum DishCategory {
+  RICE
+  NOODLE
+  SOUP
+  SNACK
+  DRINK
+  OTHER
+}
+
+model Dish {
+  id          String       @id @default(cuid())
+  name        String
+  slug        String       @unique
+  imageUrl    String
+  category    DishCategory
+  description String?
+  spiceLevel  Int          @default(0)
+  weight      Int          @default(1)
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([category])
+  @@index([isActive])
+  @@index([name])
+}
