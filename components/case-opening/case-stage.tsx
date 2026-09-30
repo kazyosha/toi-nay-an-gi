@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { ShieldCheck, Sparkle } from '@phosphor-icons/react'
 import type { DishRecord, DrawFilters } from '@/lib/dishes/types'
@@ -11,10 +11,12 @@ import RevealPanel from './reveal-panel'
 import { REEL_SPIN_DURATION_MS } from './reel-motion'
 import CelebrationModal from './celebration-modal'
 import { startSpinSound } from '@/lib/audio/celebration-sound'
+import { useDrawHistory } from '@/lib/history/use-draw-history'
+import DrawHistory from './draw-history'
 
 type DrawResponse = {
   reelItems: Array<Pick<DishRecord, 'id' | 'name' | 'imageUrl' | 'category'>>
-  selectedDish: Pick<DishRecord, 'id' | 'name' | 'imageUrl' | 'description' | 'spiceLevel'>
+  selectedDish: Pick<DishRecord, 'id' | 'name' | 'imageUrl' | 'category' | 'description' | 'spiceLevel'>
 }
 
 type InitialDish = Pick<DishRecord, 'id' | 'name' | 'imageUrl' | 'category' | 'description' | 'spiceLevel'>
@@ -36,6 +38,8 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
   const [celebrationOpen, setCelebrationOpen] = useState(false)
   const [error, setError] = useState('')
   const [spinSequence, setSpinSequence] = useState(0)
+  const [noRepeatToday, setNoRepeatToday] = useState(false)
+  const { history, todayIds, add: addHistory, clear: clearHistory } = useDrawHistory()
   const previewController = useRef<AbortController | null>(null)
   const initialFilters = useRef(filters)
   const previousFilters = useRef<string | null>(null)
@@ -43,6 +47,7 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
   const reelKey = status === 'drawing'
     ? `${spinSequence}-${draw?.reelItems.map((item, index) => `${item.id}-${index}`).join('|') ?? ''}`
     : ''
+  const effectiveFilters = useMemo(() => ({ ...filters, excludeDishIds: noRepeatToday ? todayIds : [] }), [filters, noRepeatToday, todayIds])
 
   useEffect(() => {
     statusRef.current = status
@@ -69,11 +74,12 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
   }, [initialDishes.length])
 
   useEffect(() => {
-    const filterKey = JSON.stringify(filters)
+    const filterKey = JSON.stringify(effectiveFilters)
     if (previousFilters.current === null) {
       previousFilters.current = filterKey
       return
     }
+    if (previousFilters.current === filterKey) return
     previousFilters.current = filterKey
     if (statusRef.current === 'drawing') return
 
@@ -87,7 +93,7 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
     fetch('/api/draw', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(filters),
+      body: JSON.stringify(effectiveFilters),
       signal: controller.signal,
     }).then(async (response) => {
       const body = await response.json()
@@ -102,7 +108,7 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
     }).catch(() => undefined)
 
     return () => controller.abort()
-  }, [filters])
+  }, [effectiveFilters])
 
   useEffect(() => {
     if (status !== 'drawing') return
@@ -120,7 +126,7 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
       const response = await fetch('/api/draw', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(filters),
+        body: JSON.stringify(effectiveFilters),
       })
       const body = await response.json()
 
@@ -134,6 +140,11 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
       await new Promise((resolve) => window.setTimeout(resolve, REEL_SPIN_DURATION_MS))
       setStatus('revealed')
       setCelebrationOpen(true)
+      try {
+        addHistory({ drawnAt: new Date().toISOString(), dish: body.selectedDish, filters: effectiveFilters })
+      } catch {
+        // A storage permission issue must not hide a successful draw.
+      }
     } catch {
       setStatus('error')
       setError('Kết nối gặp sự cố. Bạn thử lại nhé.')
@@ -171,14 +182,16 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
         <div className="action-zone">
           <CategoryFilter selected={filters.categories} onChange={(categories) => setFilters((current) => ({ ...current, categories }))} />
           <AdvancedFilters value={filters} disabled={status === 'drawing'} onChange={(advanced) => setFilters((current) => ({ ...current, ...advanced }))} />
+          <label className="no-repeat-toggle"><input type="checkbox" checked={noRepeatToday} disabled={status === 'drawing'} onChange={(event) => setNoRepeatToday(event.target.checked)} /> Không lặp món đã quay hôm nay <small>({todayIds.length})</small></label>
           <button type="button" className="primary-button" onClick={openCase} disabled={status === 'drawing'}>
             {status === 'drawing' ? 'ĐANG QUAY...' : 'MỞ HÒM'}
           </button>
-          {status === 'error' && <p className="error-message" role="alert">{error}</p>}
+          {status === 'error' && <div className="error-stack"><p className="error-message" role="alert">{error}</p>{noRepeatToday && <button type="button" className="table-action" onClick={() => setNoRepeatToday(false)}>Quay lại toàn bộ món</button>}</div>}
           <p className="action-hint">Bộ lọc cập nhật ngay lập tức. Kết quả được chọn từ danh sách món đang bật.</p>
         </div>
 
         <RevealPanel dish={status === 'revealed' ? draw?.selectedDish ?? null : null} onDrawAgain={openCase} />
+        <DrawHistory history={history} onClear={clearHistory} />
         {celebrationOpen && status === 'revealed' && draw?.selectedDish && (
           <CelebrationModal dish={draw.selectedDish} onClose={() => setCelebrationOpen(false)} />
         )}

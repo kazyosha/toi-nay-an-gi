@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import CaseStage from './case-stage'
+import { drawHistoryStorageKey } from '@/lib/history/storage'
 
 const dish = {
   id: 'pho',
@@ -109,5 +110,20 @@ describe('CaseStage', () => {
     fireEvent.click(screen.getByRole('button', { name: /mở hòm/i }))
 
     await waitFor(() => expect(screen.getByText('Chưa có món phù hợp để mở hòm.')).toBeInTheDocument())
+  })
+
+  it('sends today history IDs when no-repeat mode is enabled', async () => {
+    window.localStorage.setItem(drawHistoryStorageKey, JSON.stringify([{
+      drawnAt: new Date().toISOString(),
+      dish: { id: 'pho', name: 'Phở bò', imageUrl: dish.imageUrl, category: 'SOUP' },
+      filters: { categories: [], priceLevels: [], mealTimes: [], excludeDishIds: [] },
+    }]))
+
+    render(<CaseStage initialDishes={initialDishes} />)
+    fireEvent.click(screen.getByLabelText(/Không lặp món đã quay hôm nay/))
+
+    await waitFor(() => expect(fetch).toHaveBeenCalledWith('/api/draw', expect.objectContaining({
+      body: expect.stringContaining('"excludeDishIds":["pho"]'),
+    })))
   })
 })
