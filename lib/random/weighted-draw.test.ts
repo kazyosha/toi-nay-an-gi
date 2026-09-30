@@ -36,4 +36,18 @@ describe('buildReelItems', () => {
     expect(reel).toHaveLength(9)
     expect(reel[4].id).toBe('com')
   })
+
+  it('does not duplicate the selected dish elsewhere in the same reel', () => {
+    const reel = buildReelItems(
+      [
+        { id: 'com', name: 'Cơm tấm', weight: 3 },
+        { id: 'pho', name: 'Phở bò', weight: 1 },
+        { id: 'noodles', name: 'Mì Quảng', weight: 1 },
+      ],
+      'com',
+      9,
+    )
+
+    expect(reel.filter((item) => item.id === 'com')).toHaveLength(1)
+  })
 })

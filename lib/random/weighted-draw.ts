@@ -21,9 +21,17 @@ export function buildReelItems<T extends WeightedItem>(items: ReadonlyArray<T>, 
   if (items.length === 0) throw new Error('EMPTY_DISH_POOL')
   if (length < 3 || length % 2 === 0) throw new Error('REEL_LENGTH_MUST_BE_ODD')
 
-  const selected = items.find((item) => item.id === selectedId)
+  const uniqueItems = Array.from(new Map(items.map((item) => [item.id, item])).values())
+  const selected = uniqueItems.find((item) => item.id === selectedId)
   if (!selected) throw new Error('SELECTED_DISH_NOT_FOUND')
 
   const pointerIndex = Math.floor(length / 2)
-  return Array.from({ length }, (_, index) => (index === pointerIndex ? selected : items[index % items.length]))
+  const alternatives = uniqueItems.filter((item) => item.id !== selectedId)
+  return Array.from({ length }, (_, index) => {
+    if (index === pointerIndex) return selected
+    if (alternatives.length === 0) return selected
+
+    const alternativeIndex = index < pointerIndex ? index : index - 1
+    return alternatives[alternativeIndex % alternatives.length]
+  })
 }
