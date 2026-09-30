@@ -49,7 +49,7 @@ describe('CaseStage', () => {
     await waitFor(() => expect(within(screen.getByLabelText('Reel món ăn')).getAllByRole('article').length).toBeGreaterThan(0))
     expect(fetch).toHaveBeenCalledWith('/api/draw', expect.objectContaining({
       method: 'POST',
-      body: JSON.stringify({ categories: [] }),
+      body: JSON.stringify({ categories: [], priceLevels: [], mealTimes: [], includeDishIds: [], excludeDishIds: [] }),
     }))
   })
 
@@ -76,7 +76,7 @@ describe('CaseStage', () => {
 
     await waitFor(() => expect(fetch).toHaveBeenCalledWith('/api/draw', expect.objectContaining({
       method: 'POST',
-      body: JSON.stringify({ categories: ['SOUP'] }),
+      body: JSON.stringify({ categories: ['SOUP'], priceLevels: [], mealTimes: [], includeDishIds: [], excludeDishIds: [] }),
     })))
   })
 
@@ -87,7 +87,7 @@ describe('CaseStage', () => {
 
     await waitFor(() => expect(fetch).toHaveBeenCalledWith('/api/draw', expect.objectContaining({
       method: 'POST',
-      body: JSON.stringify({ categories: ['SOUP'] }),
+      body: JSON.stringify({ categories: ['SOUP'], priceLevels: [], mealTimes: [], includeDishIds: [], excludeDishIds: [] }),
     })))
   })
 

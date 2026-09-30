@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { ShieldCheck, Sparkle } from '@phosphor-icons/react'
-import type { DishCategory, DishRecord } from '@/lib/dishes/types'
+import type { DishRecord, DrawFilters } from '@/lib/dishes/types'
 import CategoryFilter from './category-filter'
+import AdvancedFilters from './advanced-filters'
 import DishReel from './dish-reel'
 import RevealPanel from './reveal-panel'
 import { REEL_SPIN_DURATION_MS } from './reel-motion'
@@ -29,14 +30,15 @@ function makePreviewDraw(dishes: InitialDish[]): DrawResponse | null {
 }
 
 export default function CaseStage({ initialDishes = [] }: { initialDishes?: InitialDish[] }) {
-  const [categories, setCategories] = useState<DishCategory[]>([])
+  const [filters, setFilters] = useState<DrawFilters>({ categories: [], priceLevels: [], mealTimes: [], includeDishIds: [], excludeDishIds: [] })
   const [draw, setDraw] = useState<DrawResponse | null>(() => makePreviewDraw(initialDishes))
   const [status, setStatus] = useState<'idle' | 'drawing' | 'revealed' | 'error'>('idle')
   const [celebrationOpen, setCelebrationOpen] = useState(false)
   const [error, setError] = useState('')
   const [spinSequence, setSpinSequence] = useState(0)
   const previewController = useRef<AbortController | null>(null)
-  const previousCategories = useRef<string | null>(null)
+  const initialFilters = useRef(filters)
+  const previousFilters = useRef<string | null>(null)
   const statusRef = useRef(status)
   const reelKey = status === 'drawing'
     ? `${spinSequence}-${draw?.reelItems.map((item, index) => `${item.id}-${index}`).join('|') ?? ''}`
@@ -55,7 +57,7 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
     fetch('/api/draw', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ categories: [] }),
+      body: JSON.stringify(initialFilters.current),
       signal: controller.signal,
     }).then(async (response) => {
       if (!response.ok) return
@@ -67,12 +69,12 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
   }, [initialDishes.length])
 
   useEffect(() => {
-    const categoryKey = categories.join('|')
-    if (previousCategories.current === null) {
-      previousCategories.current = categoryKey
+    const filterKey = JSON.stringify(filters)
+    if (previousFilters.current === null) {
+      previousFilters.current = filterKey
       return
     }
-    previousCategories.current = categoryKey
+    previousFilters.current = filterKey
     if (statusRef.current === 'drawing') return
 
     previewController.current?.abort()
@@ -85,7 +87,7 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
     fetch('/api/draw', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ categories }),
+      body: JSON.stringify(filters),
       signal: controller.signal,
     }).then(async (response) => {
       const body = await response.json()
@@ -100,7 +102,7 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
     }).catch(() => undefined)
 
     return () => controller.abort()
-  }, [categories])
+  }, [filters])
 
   useEffect(() => {
     if (status !== 'drawing') return
@@ -118,7 +120,7 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
       const response = await fetch('/api/draw', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ categories }),
+        body: JSON.stringify(filters),
       })
       const body = await response.json()
 
@@ -163,16 +165,17 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
         <div className="case-stage-panel">
           <div className="case-stage-topline"><span>MỞ HÒM // NGẪU NHIÊN</span><span>QUAY CÔNG BẰNG</span></div>
           <DishReel items={draw?.reelItems ?? []} selectedId={draw?.selectedDish.id ?? ''} isDrawing={status === 'drawing'} rollKey={reelKey} />
-          <div className="stage-meta"><span>NHÓM MÓN: {categories.length ? `${categories.length} nhóm` : 'TẤT CẢ MÓN'}</span><span>NGẪU NHIÊN THEO TRỌNG SỐ</span></div>
+          <div className="stage-meta"><span>NHÓM MÓN: {filters.categories.length ? `${filters.categories.length} nhóm` : 'TẤT CẢ MÓN'}</span><span>NGẪU NHIÊN THEO TRỌNG SỐ</span></div>
         </div>
 
         <div className="action-zone">
-          <CategoryFilter selected={categories} onChange={setCategories} />
+          <CategoryFilter selected={filters.categories} onChange={(categories) => setFilters((current) => ({ ...current, categories }))} />
+          <AdvancedFilters value={filters} disabled={status === 'drawing'} onChange={(advanced) => setFilters((current) => ({ ...current, ...advanced }))} />
           <button type="button" className="primary-button" onClick={openCase} disabled={status === 'drawing'}>
             {status === 'drawing' ? 'ĐANG QUAY...' : 'MỞ HÒM'}
           </button>
           {status === 'error' && <p className="error-message" role="alert">{error}</p>}
-          <p className="action-hint">Không có món trùng nhau trong lần quay này. Kết quả được chọn từ danh sách admin.</p>
+          <p className="action-hint">Bộ lọc cập nhật ngay lập tức. Kết quả được chọn từ danh sách món đang bật.</p>
         </div>
 
         <RevealPanel dish={status === 'revealed' ? draw?.selectedDish ?? null : null} onDrawAgain={openCase} />

@@ -39,7 +39,7 @@ describe('POST /api/draw', () => {
     expect(response.status).toBe(200)
     expect(body.selectedDish.id).toBe('pho')
     expect(body.reelItems).toHaveLength(9)
-    expect(listActiveDishesMock).toHaveBeenCalledWith(['SOUP'])
+    expect(listActiveDishesMock).toHaveBeenCalledWith({ categories: ['SOUP'], priceLevels: [], mealTimes: [], includeDishIds: [], excludeDishIds: [] })
   })
 
   it('returns EMPTY_DISH_POOL when no active dish matches', async () => {
@@ -59,6 +59,46 @@ describe('POST /api/draw', () => {
     const response = await POST(new Request('http://localhost/api/draw', {
       method: 'POST',
       body: JSON.stringify({ categories: ['DESSERT'] }),
+      headers: { 'content-type': 'application/json' },
+    }))
+
+    expect(response.status).toBe(400)
+  })
+
+  it('passes advanced filters and excludes requested dishes', async () => {
+    listActiveDishesMock.mockResolvedValue([dish])
+
+    const response = await POST(new Request('http://localhost/api/draw', {
+      method: 'POST',
+      body: JSON.stringify({
+        categories: ['SOUP'],
+        isVegetarian: false,
+        priceLevels: [1, 2],
+        maxPrepTimeMinutes: 45,
+        mealTimes: ['DINNER'],
+        maxSpiceLevel: 2,
+        excludeDishIds: ['pho'],
+      }),
+      headers: { 'content-type': 'application/json' },
+    }))
+
+    expect(response.status).toBe(200)
+    expect(listActiveDishesMock).toHaveBeenCalledWith({
+      categories: ['SOUP'],
+      isVegetarian: false,
+      priceLevels: [1, 2],
+      maxPrepTimeMinutes: 45,
+      mealTimes: ['DINNER'],
+      maxSpiceLevel: 2,
+      includeDishIds: [],
+      excludeDishIds: ['pho'],
+    })
+  })
+
+  it('rejects invalid advanced filter values', async () => {
+    const response = await POST(new Request('http://localhost/api/draw', {
+      method: 'POST',
+      body: JSON.stringify({ priceLevels: [4] }),
       headers: { 'content-type': 'application/json' },
     }))
 
