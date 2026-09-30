@@ -12,6 +12,7 @@ import { REEL_SPIN_DURATION_MS } from './reel-motion'
 import CelebrationModal from './celebration-modal'
 import { startSpinSound } from '@/lib/audio/celebration-sound'
 import { useDrawHistory } from '@/lib/history/use-draw-history'
+import { useFavorites } from '@/lib/favorites/use-favorites'
 import DrawHistory from './draw-history'
 
 type DrawResponse = {
@@ -39,7 +40,10 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
   const [error, setError] = useState('')
   const [spinSequence, setSpinSequence] = useState(0)
   const [noRepeatToday, setNoRepeatToday] = useState(false)
+  const [favoritesOnly, setFavoritesOnly] = useState(false)
   const { history, todayIds, add: addHistory, clear: clearHistory } = useDrawHistory()
+  const validDishIds = useMemo(() => initialDishes.length ? initialDishes.map((dish) => dish.id) : undefined, [initialDishes])
+  const { favoriteIds, toggle: toggleFavorite, isFavorite } = useFavorites(validDishIds)
   const previewController = useRef<AbortController | null>(null)
   const initialFilters = useRef(filters)
   const previousFilters = useRef<string | null>(null)
@@ -47,7 +51,11 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
   const reelKey = status === 'drawing'
     ? `${spinSequence}-${draw?.reelItems.map((item, index) => `${item.id}-${index}`).join('|') ?? ''}`
     : ''
-  const effectiveFilters = useMemo(() => ({ ...filters, excludeDishIds: noRepeatToday ? todayIds : [] }), [filters, noRepeatToday, todayIds])
+  const effectiveFilters = useMemo(() => ({
+    ...filters,
+    includeDishIds: favoritesOnly ? (favoriteIds.length ? favoriteIds : ['__no_favorite_match__']) : [],
+    excludeDishIds: noRepeatToday ? todayIds : [],
+  }), [favoriteIds, favoritesOnly, filters, noRepeatToday, todayIds])
 
   useEffect(() => {
     statusRef.current = status
@@ -175,7 +183,7 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
 
         <div className="case-stage-panel">
           <div className="case-stage-topline"><span>MỞ HÒM // NGẪU NHIÊN</span><span>QUAY CÔNG BẰNG</span></div>
-          <DishReel items={draw?.reelItems ?? []} selectedId={draw?.selectedDish.id ?? ''} isDrawing={status === 'drawing'} rollKey={reelKey} />
+          <DishReel items={draw?.reelItems ?? []} selectedId={draw?.selectedDish.id ?? ''} isDrawing={status === 'drawing'} rollKey={reelKey} favoriteIds={favoriteIds} onFavoriteToggle={toggleFavorite} />
           <div className="stage-meta"><span>NHÓM MÓN: {filters.categories.length ? `${filters.categories.length} nhóm` : 'TẤT CẢ MÓN'}</span><span>NGẪU NHIÊN THEO TRỌNG SỐ</span></div>
         </div>
 
@@ -183,15 +191,16 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
           <CategoryFilter selected={filters.categories} onChange={(categories) => setFilters((current) => ({ ...current, categories }))} />
           <AdvancedFilters value={filters} disabled={status === 'drawing'} onChange={(advanced) => setFilters((current) => ({ ...current, ...advanced }))} />
           <label className="no-repeat-toggle"><input type="checkbox" checked={noRepeatToday} disabled={status === 'drawing'} onChange={(event) => setNoRepeatToday(event.target.checked)} /> Không lặp món đã quay hôm nay <small>({todayIds.length})</small></label>
+          <label className="no-repeat-toggle"><input type="checkbox" checked={favoritesOnly} disabled={status === 'drawing'} onChange={(event) => setFavoritesOnly(event.target.checked)} /> Chỉ quay món yêu thích <small>({favoriteIds.length})</small></label>
           <button type="button" className="primary-button" onClick={openCase} disabled={status === 'drawing'}>
             {status === 'drawing' ? 'ĐANG QUAY...' : 'MỞ HÒM'}
           </button>
-          {status === 'error' && <div className="error-stack"><p className="error-message" role="alert">{error}</p>{noRepeatToday && <button type="button" className="table-action" onClick={() => setNoRepeatToday(false)}>Quay lại toàn bộ món</button>}</div>}
+          {status === 'error' && <div className="error-stack"><p className="error-message" role="alert">{error}</p>{noRepeatToday && <button type="button" className="table-action" onClick={() => setNoRepeatToday(false)}>Quay lại toàn bộ món</button>}{favoritesOnly && <button type="button" className="table-action" onClick={() => setFavoritesOnly(false)}>Tắt lọc yêu thích</button>}</div>}
           <p className="action-hint">Bộ lọc cập nhật ngay lập tức. Kết quả được chọn từ danh sách món đang bật.</p>
         </div>
 
-        <RevealPanel dish={status === 'revealed' ? draw?.selectedDish ?? null : null} onDrawAgain={openCase} />
-        <DrawHistory history={history} onClear={clearHistory} />
+        <RevealPanel dish={status === 'revealed' ? draw?.selectedDish ?? null : null} onDrawAgain={openCase} isFavorite={draw?.selectedDish ? isFavorite(draw.selectedDish.id) : false} onFavoriteToggle={draw?.selectedDish ? () => toggleFavorite(draw.selectedDish.id) : undefined} />
+        <DrawHistory history={history} onClear={clearHistory} favoriteIds={favoriteIds} onFavoriteToggle={toggleFavorite} />
         {celebrationOpen && status === 'revealed' && draw?.selectedDish && (
           <CelebrationModal dish={draw.selectedDish} onClose={() => setCelebrationOpen(false)} />
         )}

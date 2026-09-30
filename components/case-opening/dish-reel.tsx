@@ -12,9 +12,11 @@ type DishReelProps = {
   selectedId: string
   isDrawing: boolean
   rollKey?: string
+  favoriteIds?: string[]
+  onFavoriteToggle?: (id: string) => void
 }
 
-export default function DishReel({ items, selectedId, isDrawing, rollKey = '' }: DishReelProps) {
+export default function DishReel({ items, selectedId, isDrawing, rollKey = '', favoriteIds = [], onFavoriteToggle }: DishReelProps) {
   const shouldReduceMotion = useReducedMotion()
   const rolling = isDrawing || Boolean(rollKey)
   const shellRef = useRef<HTMLDivElement>(null)
@@ -67,7 +69,7 @@ export default function DishReel({ items, selectedId, isDrawing, rollKey = '' }:
             } : { duration: 0.15 }}
           >
             {repeatedItems.map(({ dish, key }) => (
-              <DishTile key={key} dish={dish} featured={!isDrawing && dish.id === selectedId} />
+              <DishTile key={key} dish={dish} featured={!isDrawing && dish.id === selectedId} isFavorite={favoriteIds.includes(dish.id)} onFavoriteToggle={onFavoriteToggle ? () => onFavoriteToggle(dish.id) : undefined} />
             ))}
           </motion.div>
         )}

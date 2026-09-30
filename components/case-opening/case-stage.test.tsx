@@ -28,6 +28,7 @@ describe('CaseStage', () => {
   const initialDishes = [{ ...dish, category: 'SOUP' as const }]
 
   beforeEach(() => {
+    window.localStorage.clear()
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ reelItems: Array.from({ length: 9 }, () => dish), selectedDish: dish }),
@@ -124,6 +125,17 @@ describe('CaseStage', () => {
 
     await waitFor(() => expect(fetch).toHaveBeenCalledWith('/api/draw', expect.objectContaining({
       body: expect.stringContaining('"excludeDishIds":["pho"]'),
+    })))
+  })
+
+  it('toggles a favorite on the reel and can filter to favorites only', async () => {
+    render(<CaseStage initialDishes={initialDishes} />)
+    fireEvent.click(screen.getAllByRole('button', { name: 'Thêm yêu thích Phở bò' })[0])
+    expect(screen.getAllByRole('button', { name: 'Bỏ yêu thích Phở bò' }).length).toBeGreaterThan(0)
+    fireEvent.click(screen.getByLabelText(/Chỉ quay món yêu thích/))
+
+    await waitFor(() => expect(fetch).toHaveBeenCalledWith('/api/draw', expect.objectContaining({
+      body: expect.stringContaining('"includeDishIds":["pho"]'),
     })))
   })
 })
