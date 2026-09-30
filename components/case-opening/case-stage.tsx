@@ -18,6 +18,7 @@ export default function CaseStage() {
   const [draw, setDraw] = useState<DrawResponse | null>(null)
   const [status, setStatus] = useState<'idle' | 'drawing' | 'revealed' | 'error'>('idle')
   const [error, setError] = useState('')
+  const reelKey = draw?.reelItems.map((item, index) => `${item.id}-${index}`).join('|') ?? ''
 
   async function openCase() {
     setStatus('drawing')
@@ -69,7 +70,7 @@ export default function CaseStage() {
 
         <div className="case-stage-panel">
           <div className="case-stage-topline"><span>CASE DROP // RANDOMIZED</span><span>FAIR DRAW</span></div>
-          <DishReel items={draw?.reelItems ?? []} selectedId={draw?.selectedDish.id ?? ''} isDrawing={status === 'drawing'} />
+          <DishReel items={draw?.reelItems ?? []} selectedId={draw?.selectedDish.id ?? ''} isDrawing={status === 'drawing'} rollKey={reelKey} />
           <div className="stage-meta"><span>POOL: {categories.length ? `${categories.length} nhóm` : 'TẤT CẢ MÓN'}</span><span>WEIGHTED RNG</span></div>
         </div>
 
