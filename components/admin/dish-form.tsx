@@ -20,9 +20,35 @@ export default function DishForm({ dish }: DishFormProps) {
   })
   const [error, setError] = useState('')
   const [pending, setPending] = useState(false)
+  const [uploading, setUploading] = useState(false)
 
   function update(key: string, value: string | boolean) {
     setForm((current) => ({ ...current, [key]: value }))
+  }
+
+  async function uploadImage(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+    setError('')
+    const body = new FormData()
+    body.append('file', file)
+
+    try {
+      const response = await fetch('/api/admin/upload', { method: 'POST', body })
+      const result = await response.json()
+      if (!response.ok) {
+        setError(result.error || 'Không thể tải ảnh lên.')
+        return
+      }
+      update('imageUrl', result.url)
+    } catch {
+      setError('Không thể kết nối tới bộ nhớ ảnh.')
+    } finally {
+      setUploading(false)
+      event.target.value = ''
+    }
   }
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
@@ -51,7 +77,17 @@ export default function DishForm({ dish }: DishFormProps) {
       <div className="form-grid">
         <label>Tên món<input value={form.name} onChange={(event) => update('name', event.target.value)} required /></label>
         <label>Slug<input value={form.slug} onChange={(event) => update('slug', event.target.value)} pattern="[a-z0-9]+(?:-[a-z0-9]+)*" required /></label>
-        <label className="form-span-2">URL hình ảnh<input type="url" value={form.imageUrl} onChange={(event) => update('imageUrl', event.target.value)} required /></label>
+        <label className="form-span-2 image-upload-field">Ảnh món ăn
+          <div className="image-upload-row">
+            <input type="url" value={form.imageUrl} placeholder="Dán URL ảnh hoặc tải file bên cạnh" onChange={(event) => update('imageUrl', event.target.value)} required />
+            <label className="image-upload-button">
+              <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={uploadImage} disabled={uploading} />
+              {uploading ? 'ĐANG TẢI...' : 'TẢI ẢNH'}
+            </label>
+          </div>
+          {form.imageUrl && <img className="image-upload-preview" src={form.imageUrl} alt="Xem trước món ăn" />}
+          <small>JPG, PNG, WEBP hoặc GIF · tối đa 5 MB</small>
+        </label>
         <label>Nhóm món<select value={form.category} onChange={(event) => update('category', event.target.value)}>{categoryOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
         <label>Độ cay (0-3)<input type="number" min="0" max="3" value={form.spiceLevel} onChange={(event) => update('spiceLevel', event.target.value)} /></label>
         <label>Trọng số<input type="number" min="1" max="1000" value={form.weight} onChange={(event) => update('weight', event.target.value)} /></label>

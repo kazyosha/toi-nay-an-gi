@@ -23,6 +23,7 @@ Thêm các Environment Variables cho Production, Preview và Development:
 | `DATABASE_URL` | Pooled PostgreSQL connection string |
 | `ADMIN_PASSWORD` | Mật khẩu truy cập `/admin` |
 | `ADMIN_SESSION_SECRET` | Chuỗi ngẫu nhiên dài, tối thiểu 32 ký tự |
+| `BLOB_READ_WRITE_TOKEN` | Token Vercel Blob để admin tải ảnh món ăn lên |
 
 Không commit `.env` vào repository.
 
@@ -30,6 +31,7 @@ Không commit `.env` vào repository.
 
 - Mở `/` và thử nút **MỞ HÒM**.
 - Mở `/admin`, đăng nhập và tạo một món test.
+- Trong form món ăn, kết nối Vercel Blob hoặc thêm `BLOB_READ_WRITE_TOKEN` để dùng nút **TẢI ẢNH**. Ảnh được lưu trên Blob, database chỉ lưu URL.
 - Xác nhận món tắt `Cho phép xuất hiện trong pool` không xuất hiện khi quay.
 - Nếu cần seed lại, chạy `npm run db:seed` với `DATABASE_URL` của môi trường tương ứng.
 

@@ -19,6 +19,7 @@
     "@phosphor-icons/react": "^2.1.10",
     "@prisma/adapter-pg": "^6.19.0",
     "@prisma/client": "^6.19.0",
+    "@vercel/blob": "^2.8.0",
     "motion": "^13.4.6",
     "next": "latest",
     "pg": "^8.23.0",
