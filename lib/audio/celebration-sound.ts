@@ -76,34 +76,27 @@ export function startSpinSound() {
   if (!context) return () => undefined
 
   try {
-    const hum = context.createOscillator()
-    const humGain = context.createGain()
-    hum.type = 'sawtooth'
-    hum.frequency.setValueAtTime(92, context.currentTime)
-    humGain.gain.setValueAtTime(0.0001, context.currentTime)
-    humGain.gain.exponentialRampToValueAtTime(0.035, context.currentTime + 0.15)
-    hum.connect(humGain)
-    humGain.connect(context.destination)
-    hum.start()
-
     const tickTimer = window.setInterval(() => {
       const tick = context.createOscillator()
       const tickGain = context.createGain()
-      tick.type = 'square'
-      tick.frequency.setValueAtTime(170 + Math.random() * 80, context.currentTime)
-      tickGain.gain.setValueAtTime(0.045, context.currentTime)
-      tickGain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.045)
+      const filter = context.createBiquadFilter()
+      tick.type = 'triangle'
+      tick.frequency.setValueAtTime(260 + Math.random() * 90, context.currentTime)
+      filter.type = 'lowpass'
+      filter.frequency.setValueAtTime(1400, context.currentTime)
+      tickGain.gain.setValueAtTime(0.0001, context.currentTime)
+      tickGain.gain.exponentialRampToValueAtTime(0.022, context.currentTime + 0.006)
+      tickGain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.075)
       tick.connect(tickGain)
-      tickGain.connect(context.destination)
+      tickGain.connect(filter)
+      filter.connect(context.destination)
       tick.start()
-      tick.stop(context.currentTime + 0.05)
-    }, 135)
+      tick.stop(context.currentTime + 0.08)
+    }, 150)
 
     return () => {
       window.clearInterval(tickTimer)
-      humGain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.08)
-      hum.stop(context.currentTime + 0.1)
-      window.setTimeout(() => void context.close(), 160)
+      window.setTimeout(() => void context.close(), 120)
     }
   } catch {
     void context.close()
