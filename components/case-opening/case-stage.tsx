@@ -8,6 +8,7 @@ import CategoryFilter from './category-filter'
 import DishReel from './dish-reel'
 import RevealPanel from './reveal-panel'
 import { REEL_SPIN_DURATION_MS } from './reel-motion'
+import CelebrationModal from './celebration-modal'
 
 type DrawResponse = {
   reelItems: Array<Pick<DishRecord, 'id' | 'name' | 'imageUrl' | 'category'>>
@@ -30,6 +31,7 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
   const [categories, setCategories] = useState<DishCategory[]>([])
   const [draw, setDraw] = useState<DrawResponse | null>(() => makePreviewDraw(initialDishes))
   const [status, setStatus] = useState<'idle' | 'drawing' | 'revealed' | 'error'>('idle')
+  const [celebrationOpen, setCelebrationOpen] = useState(false)
   const [error, setError] = useState('')
   const [spinSequence, setSpinSequence] = useState(0)
   const previewController = useRef<AbortController | null>(null)
@@ -61,6 +63,7 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
     previewController.current?.abort()
     setSpinSequence((current) => current + 1)
     setStatus('drawing')
+    setCelebrationOpen(false)
     setError('')
 
     try {
@@ -80,6 +83,7 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
       setDraw(body as DrawResponse)
       await new Promise((resolve) => window.setTimeout(resolve, REEL_SPIN_DURATION_MS))
       setStatus('revealed')
+      setCelebrationOpen(true)
     } catch {
       setStatus('error')
       setError('Kết nối gặp sự cố. Bạn thử lại nhé.')
@@ -124,6 +128,9 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
         </div>
 
         <RevealPanel dish={status === 'revealed' ? draw?.selectedDish ?? null : null} onDrawAgain={openCase} />
+        {celebrationOpen && status === 'revealed' && draw?.selectedDish && (
+          <CelebrationModal dish={draw.selectedDish} onClose={() => setCelebrationOpen(false)} />
+        )}
       </section>
 
       <section id="huong-dan" className="guide-section" aria-label="Cách hoạt động">

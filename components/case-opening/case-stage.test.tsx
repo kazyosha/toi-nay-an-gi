@@ -58,8 +58,8 @@ describe('CaseStage', () => {
 
     expect(screen.getByText(/đang quay/i)).toBeInTheDocument()
 
-    await waitFor(() => expect(screen.getByRole('heading', { name: 'Phở bò' })).toBeInTheDocument(), { timeout: 10000 })
-    expect(screen.getByText('Nước dùng thơm.')).toBeInTheDocument()
+    await waitFor(() => expect(screen.getAllByRole('heading', { name: 'Phở bò' }).length).toBeGreaterThan(0), { timeout: 10000 })
+    expect(screen.getAllByText('Nước dùng thơm.').length).toBeGreaterThan(0)
   }, 12000)
 
   it('sends selected categories to the draw endpoint', async () => {
