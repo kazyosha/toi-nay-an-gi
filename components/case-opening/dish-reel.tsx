@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, useReducedMotion } from 'motion/react'
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { DishRecord } from '@/lib/dishes/types'
 import DishTile from './dish-tile'
 import { getPointerIndex } from './reel-target'
@@ -23,12 +23,15 @@ export default function DishReel({ items, selectedId, isDrawing, rollKey = '' }:
   const [targetX, setTargetX] = useState(0)
   const loopCount = 6
   const selectedIndex = getPointerIndex(items, selectedId)
-  const repeatedItems = Array.from({ length: loopCount }, (_, loop) => items.map((dish, index) => ({ dish, key: `${dish.id}-${loop}-${index}` }))).flat()
+  const repeatedItems = useMemo(
+    () => Array.from({ length: loopCount }, (_, loop) => items.map((dish, index) => ({ dish, key: `${dish.id}-${loop}-${index}` }))).flat(),
+    [items],
+  )
   const targetIndex = Math.max(items.length * (loopCount - 1) + selectedIndex, 0)
   // Keep the reel parked on the winning tile after the spin completes.
   // Resetting to 0 here makes the track snap back to its first item.
   const animationX = targetX
-  const spinKeyframes = getReelKeyframes(animationX)
+  const spinKeyframes = useMemo(() => getReelKeyframes(animationX), [animationX])
 
   useLayoutEffect(() => {
     const window = windowRef.current

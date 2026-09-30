@@ -37,6 +37,15 @@ describe('dish repository', () => {
     expect(prismaMock.dish.findMany).toHaveBeenCalledWith({
       where: { isActive: true, category: { in: ['SOUP', 'NOODLE'] } },
       orderBy: { name: 'asc' },
+      select: {
+        id: true,
+        name: true,
+        imageUrl: true,
+        category: true,
+        description: true,
+        spiceLevel: true,
+        weight: true,
+      },
     })
   })
 
@@ -48,6 +57,15 @@ describe('dish repository', () => {
     expect(prismaMock.dish.findMany).toHaveBeenCalledWith({
       where: { isActive: true },
       orderBy: { name: 'asc' },
+      select: {
+        id: true,
+        name: true,
+        imageUrl: true,
+        category: true,
+        description: true,
+        spiceLevel: true,
+        weight: true,
+      },
     })
   })
 

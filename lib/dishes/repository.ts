@@ -9,6 +9,15 @@ export async function listActiveDishes(categories: DishCategory[] = []) {
       ...(categories.length > 0 ? { category: { in: categories } } : {}),
     },
     orderBy: { name: 'asc' },
+    select: {
+      id: true,
+      name: true,
+      imageUrl: true,
+      category: true,
+      description: true,
+      spiceLevel: true,
+      weight: true,
+    },
   })
 }
 
