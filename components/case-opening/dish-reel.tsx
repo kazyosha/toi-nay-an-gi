@@ -22,6 +22,7 @@ export default function DishReel({ items, selectedId, isDrawing, rollKey = '' }:
   const selectedIndex = Math.max(items.findIndex((item) => item.id === selectedId), 0)
   const repeatedItems = Array.from({ length: loopCount }, (_, loop) => items.map((dish, index) => ({ dish, key: `${dish.id}-${loop}-${index}` }))).flat()
   const targetIndex = Math.max(items.length * (loopCount - 1) + selectedIndex, 0)
+  const animationX = rolling ? targetX : 0
 
   useLayoutEffect(() => {
     const shell = shellRef.current
@@ -45,8 +46,8 @@ export default function DishReel({ items, selectedId, isDrawing, rollKey = '' }:
             ref={trackRef}
             data-testid="dish-reel-track"
             className={`reel-track${rolling ? ' reel-track-rolling' : ''}`}
-            initial={rolling && !shouldReduceMotion ? { x: 0 } : { x: targetX }}
-            animate={{ x: targetX }}
+            initial={{ x: 0 }}
+            animate={{ x: animationX }}
             transition={rolling && !shouldReduceMotion ? { duration: 2.4, ease: [0.08, 0.72, 0.16, 1] } : { duration: 0.15 }}
           >
             {repeatedItems.map(({ dish, key }) => (
