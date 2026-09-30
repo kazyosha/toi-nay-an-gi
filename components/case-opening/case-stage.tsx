@@ -13,9 +13,21 @@ type DrawResponse = {
   selectedDish: Pick<DishRecord, 'id' | 'name' | 'imageUrl' | 'description' | 'spiceLevel'>
 }
 
-export default function CaseStage() {
+type InitialDish = Pick<DishRecord, 'id' | 'name' | 'imageUrl' | 'category' | 'description' | 'spiceLevel'>
+
+function makePreviewDraw(dishes: InitialDish[]): DrawResponse | null {
+  const firstDish = dishes[0]
+  if (!firstDish) return null
+
+  return {
+    reelItems: dishes.map(({ id, name, imageUrl, category }) => ({ id, name, imageUrl, category })),
+    selectedDish: firstDish,
+  }
+}
+
+export default function CaseStage({ initialDishes = [] }: { initialDishes?: InitialDish[] }) {
   const [categories, setCategories] = useState<DishCategory[]>([])
-  const [draw, setDraw] = useState<DrawResponse | null>(null)
+  const [draw, setDraw] = useState<DrawResponse | null>(() => makePreviewDraw(initialDishes))
   const [status, setStatus] = useState<'idle' | 'drawing' | 'revealed' | 'error'>('idle')
   const [error, setError] = useState('')
   const [spinSequence, setSpinSequence] = useState(0)
@@ -25,6 +37,8 @@ export default function CaseStage() {
     : ''
 
   useEffect(() => {
+    if (initialDishes.length > 0) return
+
     const controller = new AbortController()
     previewController.current = controller
 
@@ -40,7 +54,7 @@ export default function CaseStage() {
     }).catch(() => undefined)
 
     return () => controller.abort()
-  }, [])
+  }, [initialDishes.length])
 
   async function openCase() {
     previewController.current?.abort()

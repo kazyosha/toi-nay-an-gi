@@ -17,6 +17,8 @@ const dish = {
 }
 
 describe('CaseStage', () => {
+  const initialDishes = [{ ...dish, category: 'SOUP' as const }]
+
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: true,
@@ -42,6 +44,12 @@ describe('CaseStage', () => {
       method: 'POST',
       body: JSON.stringify({ categories: [] }),
     }))
+  })
+
+  it('renders server-provided dishes without waiting for a client request', () => {
+    render(<CaseStage initialDishes={initialDishes} />)
+
+    expect(within(screen.getByLabelText('Reel món ăn')).getAllByRole('article').length).toBeGreaterThan(0)
   })
 
   it('shows loading then reveals the selected dish after a draw', async () => {

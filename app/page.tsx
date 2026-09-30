@@ -1,5 +1,9 @@
 import CaseStage from '@/components/case-opening/case-stage'
+import { listActiveDishes } from '@/lib/dishes/repository'
 
-export default function Home() {
-  return <CaseStage />
+export const dynamic = 'force-dynamic'
+
+export default async function Home() {
+  const dishes = await listActiveDishes().catch(() => [])
+  return <CaseStage initialDishes={dishes} />
 }
