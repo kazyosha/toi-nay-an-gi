@@ -50,7 +50,7 @@ describe('CaseStage', () => {
 
     expect(screen.getByText(/đang quay/i)).toBeInTheDocument()
 
-    await waitFor(() => expect(screen.getByRole('heading', { name: 'Phở bò' })).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'Phở bò' })).toBeInTheDocument(), { timeout: 4000 })
     expect(screen.getByText('Nước dùng thơm.')).toBeInTheDocument()
   })
 

@@ -18,8 +18,11 @@ export default function CaseStage() {
   const [draw, setDraw] = useState<DrawResponse | null>(null)
   const [status, setStatus] = useState<'idle' | 'drawing' | 'revealed' | 'error'>('idle')
   const [error, setError] = useState('')
+  const [spinSequence, setSpinSequence] = useState(0)
   const previewController = useRef<AbortController | null>(null)
-  const reelKey = draw?.reelItems.map((item, index) => `${item.id}-${index}`).join('|') ?? ''
+  const reelKey = status === 'drawing'
+    ? `${spinSequence}-${draw?.reelItems.map((item, index) => `${item.id}-${index}`).join('|') ?? ''}`
+    : ''
 
   useEffect(() => {
     const controller = new AbortController()
@@ -41,6 +44,7 @@ export default function CaseStage() {
 
   async function openCase() {
     previewController.current?.abort()
+    setSpinSequence((current) => current + 1)
     setStatus('drawing')
     setError('')
 
@@ -59,6 +63,7 @@ export default function CaseStage() {
       }
 
       setDraw(body as DrawResponse)
+      await new Promise((resolve) => window.setTimeout(resolve, 2400))
       setStatus('revealed')
     } catch {
       setStatus('error')
