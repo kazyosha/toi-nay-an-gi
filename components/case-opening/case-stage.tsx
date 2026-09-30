@@ -9,6 +9,7 @@ import DishReel from './dish-reel'
 import RevealPanel from './reveal-panel'
 import { REEL_SPIN_DURATION_MS } from './reel-motion'
 import CelebrationModal from './celebration-modal'
+import { startSpinSound } from '@/lib/audio/celebration-sound'
 
 type DrawResponse = {
   reelItems: Array<Pick<DishRecord, 'id' | 'name' | 'imageUrl' | 'category'>>
@@ -35,9 +36,15 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
   const [error, setError] = useState('')
   const [spinSequence, setSpinSequence] = useState(0)
   const previewController = useRef<AbortController | null>(null)
+  const previousCategories = useRef<string | null>(null)
+  const statusRef = useRef(status)
   const reelKey = status === 'drawing'
     ? `${spinSequence}-${draw?.reelItems.map((item, index) => `${item.id}-${index}`).join('|') ?? ''}`
     : ''
+
+  useEffect(() => {
+    statusRef.current = status
+  }, [status])
 
   useEffect(() => {
     if (initialDishes.length > 0) return
@@ -58,6 +65,47 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
 
     return () => controller.abort()
   }, [initialDishes.length])
+
+  useEffect(() => {
+    const categoryKey = categories.join('|')
+    if (previousCategories.current === null) {
+      previousCategories.current = categoryKey
+      return
+    }
+    previousCategories.current = categoryKey
+    if (statusRef.current === 'drawing') return
+
+    previewController.current?.abort()
+    const controller = new AbortController()
+    previewController.current = controller
+    setCelebrationOpen(false)
+    setStatus('idle')
+    setError('')
+
+    fetch('/api/draw', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ categories }),
+      signal: controller.signal,
+    }).then(async (response) => {
+      const body = await response.json()
+      if (controller.signal.aborted) return
+      if (!response.ok) {
+        setDraw(null)
+        setStatus('error')
+        setError(body.message || 'Không có món phù hợp trong nhóm này.')
+        return
+      }
+      setDraw(body as DrawResponse)
+    }).catch(() => undefined)
+
+    return () => controller.abort()
+  }, [categories])
+
+  useEffect(() => {
+    if (status !== 'drawing') return
+    return startSpinSound()
+  }, [status])
 
   async function openCase() {
     previewController.current?.abort()

@@ -16,6 +16,13 @@ const dish = {
   updatedAt: '2026-01-01T00:00:00.000Z',
 }
 
+const { playApplauseSoundMock, playCelebrationSoundMock, startSpinSoundMock } = vi.hoisted(() => ({
+  playApplauseSoundMock: vi.fn(),
+  playCelebrationSoundMock: vi.fn(),
+  startSpinSoundMock: vi.fn(() => vi.fn()),
+}))
+vi.mock('@/lib/audio/celebration-sound', () => ({ playApplauseSound: playApplauseSoundMock, playCelebrationSound: playCelebrationSoundMock, startSpinSound: startSpinSoundMock }))
+
 describe('CaseStage', () => {
   const initialDishes = [{ ...dish, category: 'SOUP' as const }]
 
@@ -71,6 +78,25 @@ describe('CaseStage', () => {
       method: 'POST',
       body: JSON.stringify({ categories: ['SOUP'] }),
     })))
+  })
+
+  it('refreshes the visible preview when categories change', async () => {
+    render(<CaseStage initialDishes={initialDishes} />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Bún phở' }))
+
+    await waitFor(() => expect(fetch).toHaveBeenCalledWith('/api/draw', expect.objectContaining({
+      method: 'POST',
+      body: JSON.stringify({ categories: ['SOUP'] }),
+    })))
+  })
+
+  it('starts the reel sound when a draw begins', () => {
+    render(<CaseStage initialDishes={initialDishes} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /mở hòm/i }))
+
+    expect(startSpinSoundMock).toHaveBeenCalledOnce()
   })
 
   it('shows a contextual message when the pool is empty', async () => {
