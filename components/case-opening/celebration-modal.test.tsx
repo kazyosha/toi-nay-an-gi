@@ -2,6 +2,9 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import CelebrationModal from './celebration-modal'
 
+const { playCelebrationSoundMock } = vi.hoisted(() => ({ playCelebrationSoundMock: vi.fn() }))
+vi.mock('@/lib/audio/celebration-sound', () => ({ playCelebrationSound: playCelebrationSoundMock }))
+
 const dish = {
   name: 'Bánh xèo',
   description: 'Vỏ bánh giòn, nhân tôm thịt.',
@@ -17,6 +20,7 @@ describe('CelebrationModal', () => {
     expect(screen.getByRole('dialog', { name: /chúc mừng/i })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Bánh xèo' })).toBeInTheDocument()
     expect(screen.getAllByTestId('celebration-spark')).toHaveLength(24)
+    expect(playCelebrationSoundMock).toHaveBeenCalledOnce()
 
     fireEvent.click(screen.getByRole('button', { name: /^Đóng$/i }))
     expect(onClose).toHaveBeenCalledOnce()

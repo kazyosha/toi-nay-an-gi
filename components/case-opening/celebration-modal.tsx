@@ -3,6 +3,7 @@
 import { Sparkle, X } from '@phosphor-icons/react'
 import { useEffect, type CSSProperties } from 'react'
 import type { DishRecord } from '@/lib/dishes/types'
+import { playCelebrationSound } from '@/lib/audio/celebration-sound'
 import DishImage from './dish-image'
 
 type CelebrationDish = Pick<DishRecord, 'name' | 'description' | 'imageUrl' | 'spiceLevel'>
@@ -16,6 +17,8 @@ const sparkIndexes = Array.from({ length: 12 }, (_, index) => index)
 
 export default function CelebrationModal({ dish, onClose }: CelebrationModalProps) {
   useEffect(() => {
+    playCelebrationSound()
+
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') onClose()
     }
