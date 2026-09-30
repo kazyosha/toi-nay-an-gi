@@ -26,7 +26,7 @@ const input = {
   isVegetarian: false,
   priceLevel: 1,
   prepTimeMinutes: 30,
-  mealTimes: ['DINNER'],
+  mealTimes: ['DINNER' as const],
   isActive: true,
 }
 

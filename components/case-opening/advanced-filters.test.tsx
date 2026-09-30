@@ -2,12 +2,13 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { useState } from 'react'
 import AdvancedFilters from './advanced-filters'
+import type { AdvancedFilterState } from './advanced-filters'
 
 describe('AdvancedFilters', () => {
   it('emits vegetarian, price, prep time, meal time and spice changes', () => {
     const onChange = vi.fn()
     function Harness() {
-      const [value, setValue] = useState({ priceLevels: [], mealTimes: [] })
+      const [value, setValue] = useState<AdvancedFilterState>({ priceLevels: [], mealTimes: [] })
       return <AdvancedFilters value={value} onChange={(next) => { onChange(next); setValue(next) }} />
     }
     render(<Harness />)

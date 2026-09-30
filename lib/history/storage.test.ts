@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { addDrawHistory, clearDrawHistory, getTodayHistoryIds, loadDrawHistory } from './storage'
+import type { DrawHistoryEntry } from './types'
 
 const entry = {
   drawnAt: '2026-09-30T10:00:00.000Z',
@@ -21,7 +22,7 @@ describe('draw history storage', () => {
     const storage = makeStorage('{invalid')
     expect(loadDrawHistory(storage)).toEqual([])
 
-    let history = []
+    let history: DrawHistoryEntry[] = []
     for (let index = 0; index < 15; index += 1) {
       history = addDrawHistory({ ...entry, drawnAt: `2026-09-${String(index + 1).padStart(2, '0')}T10:00:00.000Z` }, storage)
     }

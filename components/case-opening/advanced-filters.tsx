@@ -2,7 +2,7 @@
 
 import type { DrawFilters, MealTime } from '@/lib/dishes/types'
 
-type AdvancedFilterState = Pick<DrawFilters, 'isVegetarian' | 'priceLevels' | 'maxPrepTimeMinutes' | 'mealTimes' | 'maxSpiceLevel'>
+export type AdvancedFilterState = Pick<DrawFilters, 'isVegetarian' | 'priceLevels' | 'maxPrepTimeMinutes' | 'mealTimes' | 'maxSpiceLevel'>
 
 type AdvancedFiltersProps = {
   value: AdvancedFilterState
