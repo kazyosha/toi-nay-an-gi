@@ -7,6 +7,7 @@ import type { DishCategory, DishRecord } from '@/lib/dishes/types'
 import CategoryFilter from './category-filter'
 import DishReel from './dish-reel'
 import RevealPanel from './reveal-panel'
+import { REEL_SPIN_DURATION_MS } from './reel-motion'
 
 type DrawResponse = {
   reelItems: Array<Pick<DishRecord, 'id' | 'name' | 'imageUrl' | 'category'>>
@@ -77,7 +78,7 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
       }
 
       setDraw(body as DrawResponse)
-      await new Promise((resolve) => window.setTimeout(resolve, 2400))
+      await new Promise((resolve) => window.setTimeout(resolve, REEL_SPIN_DURATION_MS))
       setStatus('revealed')
     } catch {
       setStatus('error')

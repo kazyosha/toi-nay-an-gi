@@ -5,6 +5,7 @@ import { useLayoutEffect, useRef, useState } from 'react'
 import type { DishRecord } from '@/lib/dishes/types'
 import DishTile from './dish-tile'
 import { getPointerIndex } from './reel-target'
+import { getReelKeyframes, REEL_SPIN_DURATION_MS } from './reel-motion'
 
 type DishReelProps = {
   items: Array<Pick<DishRecord, 'id' | 'name' | 'imageUrl' | 'category'>>
@@ -27,6 +28,7 @@ export default function DishReel({ items, selectedId, isDrawing, rollKey = '' }:
   // Keep the reel parked on the winning tile after the spin completes.
   // Resetting to 0 here makes the track snap back to its first item.
   const animationX = targetX
+  const spinKeyframes = getReelKeyframes(animationX)
 
   useLayoutEffect(() => {
     const window = windowRef.current
@@ -34,10 +36,11 @@ export default function DishReel({ items, selectedId, isDrawing, rollKey = '' }:
     const targetTile = track?.children[targetIndex] as HTMLElement | undefined
     if (!window || !track || !targetTile || !items.length) return
 
-    const windowRect = window.getBoundingClientRect()
-    const targetRect = targetTile.getBoundingClientRect()
-    const targetCenter = targetRect.left + targetRect.width / 2
-    const windowCenter = windowRect.left + windowRect.width / 2
+    // Use layout coordinates rather than getBoundingClientRect: the latter
+    // includes the current transform and would recalculate the target as 0
+    // when the animation switches from drawing to revealed.
+    const targetCenter = targetTile.offsetLeft + targetTile.offsetWidth / 2
+    const windowCenter = window.clientWidth / 2
     setTargetX(windowCenter - targetCenter)
   }, [items.length, selectedId, targetIndex, rollKey])
 
@@ -52,9 +55,13 @@ export default function DishReel({ items, selectedId, isDrawing, rollKey = '' }:
             ref={trackRef}
             data-testid="dish-reel-track"
             className={`reel-track${rolling ? ' reel-track-rolling' : ''}`}
-            initial={{ x: 0 }}
-            animate={{ x: animationX }}
-            transition={rolling && !shouldReduceMotion ? { duration: 2.4, ease: [0.08, 0.72, 0.16, 1] } : { duration: 0.15 }}
+            initial={{ x: rolling ? 0 : animationX }}
+            animate={{ x: rolling && !shouldReduceMotion ? spinKeyframes : animationX }}
+            transition={rolling && !shouldReduceMotion ? {
+              duration: REEL_SPIN_DURATION_MS / 1000,
+              ease: ['linear', [0.33, 1, 0.68, 1]],
+              times: [0, 0.625, 1],
+            } : { duration: 0.15 }}
           >
             {repeatedItems.map(({ dish, key }) => (
               <DishTile key={key} dish={dish} featured={!isDrawing && dish.id === selectedId} />
