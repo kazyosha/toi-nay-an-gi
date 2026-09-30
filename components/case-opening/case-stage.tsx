@@ -150,20 +150,20 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
           <a href="#huong-dan">Cách chơi</a>
           <a href="/admin">Quản lý</a>
         </nav>
-        <span className="header-status"><ShieldCheck size={17} weight="fill" aria-hidden="true" /> DATABASE ONLINE</span>
+        <span className="header-status"><ShieldCheck size={17} weight="fill" aria-hidden="true" /> CƠ SỞ DỮ LIỆU TRỰC TUYẾN</span>
       </header>
 
       <section id="mo-hom" className="hero-section" aria-labelledby="hero-title">
         <div className="hero-copy">
-          <p className="eyebrow">FOOD CASE OPENER <span>01</span></p>
+          <p className="eyebrow">HÒM MÓN ĂN <span>01</span></p>
           <h1 id="hero-title">Để chiếc hòm quyết định <em>bữa tối.</em></h1>
           <p className="hero-description">Một vòng quay, một món ăn. Chọn nhóm món và mở hòm để thoát khỏi câu hỏi quen thuộc.</p>
         </div>
 
         <div className="case-stage-panel">
-          <div className="case-stage-topline"><span>CASE DROP // RANDOMIZED</span><span>FAIR DRAW</span></div>
+          <div className="case-stage-topline"><span>MỞ HÒM // NGẪU NHIÊN</span><span>QUAY CÔNG BẰNG</span></div>
           <DishReel items={draw?.reelItems ?? []} selectedId={draw?.selectedDish.id ?? ''} isDrawing={status === 'drawing'} rollKey={reelKey} />
-          <div className="stage-meta"><span>POOL: {categories.length ? `${categories.length} nhóm` : 'TẤT CẢ MÓN'}</span><span>WEIGHTED RNG</span></div>
+          <div className="stage-meta"><span>NHÓM MÓN: {categories.length ? `${categories.length} nhóm` : 'TẤT CẢ MÓN'}</span><span>NGẪU NHIÊN THEO TRỌNG SỐ</span></div>
         </div>
 
         <div className="action-zone">
@@ -182,7 +182,7 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
       </section>
 
       <section id="huong-dan" className="guide-section" aria-label="Cách hoạt động">
-        <div className="guide-heading"><p className="eyebrow">HOW IT WORKS</p><h2>Ba nhịp để hết phân vân.</h2></div>
+        <div className="guide-heading"><p className="eyebrow">CÁCH HOẠT ĐỘNG</p><h2>Ba nhịp để hết phân vân.</h2></div>
         <div className="guide-grid">
           <article><span>01</span><h3>Lọc nhóm món</h3><p>Chọn đúng mood hoặc để tất cả món cùng vào pool.</p></article>
           <article><span>02</span><h3>Mở hòm</h3><p>Reel chạy qua các lựa chọn đang được bật trong database.</p></article>

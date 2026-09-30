@@ -50,7 +50,7 @@ export default function CelebrationModal({ dish, onClose }: CelebrationModalProp
           <X size={18} weight="bold" aria-hidden="true" />
         </button>
         <div className="celebration-icon"><Sparkle size={26} weight="fill" aria-hidden="true" /></div>
-        <p className="celebration-kicker">CASE OPENED // WINNER</p>
+        <p className="celebration-kicker">MỞ HÒM // MÓN TRÚNG</p>
         <p className="celebration-title">Chúc mừng!</p>
         <DishImage src={dish.imageUrl} alt={dish.name} className="celebration-image" width={150} height={150} />
         <h2>{dish.name}</h2>

@@ -52,7 +52,7 @@ export default function DishReel({ items, selectedId, isDrawing, rollKey = '' }:
       <div className="reel-pointer" aria-hidden="true" />
       <div ref={windowRef} className={`reel-window${rolling ? ' reel-window-rolling' : ''}`}>
         <div className="reel-target-line" data-testid="reel-target-line" aria-hidden="true" />
-        {items.length === 0 ? <div className="reel-empty">SELECT YOUR LOADOUT</div> : (
+        {items.length === 0 ? <div className="reel-empty">HÃY CHỌN NHÓM MÓN</div> : (
           <motion.div
             key={rollKey}
             ref={trackRef}

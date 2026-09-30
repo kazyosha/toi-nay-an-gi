@@ -58,7 +58,7 @@ a { color: inherit; text-decoration: none; }
 .hero-copy { margin-left: clamp(0rem, 5vw, 5rem); max-width: 720px; }
 .eyebrow { color: var(--accent-bright); font-family: monospace; font-size: 0.69rem; font-weight: 800; letter-spacing: 0.18em; margin: 0 0 1.2rem; text-transform: uppercase; }
 .eyebrow span { color: var(--muted); margin-left: 1rem; }
-.hero-copy h1 { font-size: clamp(2.8rem, 7vw, 6.9rem); letter-spacing: -0.08em; line-height: 0.91; margin: 0; max-width: 900px; }
+.hero-copy h1 { font-size: clamp(2.8rem, 7vw, 6.9rem); letter-spacing: -0.08em; line-height: 0.91; margin: 0; max-width: 900px; text-wrap: balance; }
 .hero-copy h1 em { color: var(--accent-bright); font-style: normal; }
 .hero-description { color: var(--muted); font-size: clamp(0.95rem, 1.5vw, 1.1rem); line-height: 1.65; margin: 1.5rem 0 0; max-width: 480px; }
 
@@ -119,7 +119,7 @@ a { color: inherit; text-decoration: none; }
 .celebration-kicker { color: var(--accent-bright); font-family: monospace; font-size: 0.62rem; font-weight: 800; letter-spacing: 0.17em; margin: 0; position: relative; z-index: 1; }
 .celebration-title { color: #fff; font-size: clamp(2rem, 8vw, 3.2rem); font-weight: 900; letter-spacing: -0.08em; margin: 0.25rem 0 1rem; position: relative; text-shadow: 0 0 24px rgba(239, 102, 218, 0.78); z-index: 1; animation: celebration-title-flash 1.6s ease-in-out infinite; }
 .celebration-image { border: 2px solid rgba(239, 102, 218, 0.72); box-shadow: 0 0 30px rgba(195, 72, 232, 0.34); display: block; height: min(230px, 62vw); margin: 0 auto; object-fit: cover; position: relative; width: min(230px, 62vw); z-index: 1; }
-.celebration-modal h2 { font-size: clamp(1.6rem, 6vw, 2.35rem); letter-spacing: -0.06em; margin: 0.95rem 0 0.35rem; position: relative; z-index: 1; }
+.celebration-modal h2 { font-size: clamp(1.6rem, 6vw, 2.35rem); letter-spacing: -0.06em; margin: 0.95rem 0 0.35rem; position: relative; text-wrap: balance; z-index: 1; }
 .celebration-description { color: var(--muted); line-height: 1.5; margin: 0 auto 1.3rem; max-width: 300px; position: relative; z-index: 1; }
 .celebration-action { min-height: 44px; min-width: 150px; position: relative; z-index: 1; }
 .celebration-fireworks { inset: 0; pointer-events: none; position: absolute; }
@@ -136,7 +136,7 @@ a { color: inherit; text-decoration: none; }
 @keyframes firework-burst { 0% { opacity: 0; transform: rotate(calc(var(--i) * 30deg)) translateY(0) scale(0.4); } 25% { opacity: 1; } 72%, 100% { opacity: 0; transform: rotate(calc(var(--i) * 30deg)) translateY(-52px) scale(1); } }
 
 .guide-section { border-top: 1px solid rgba(185, 161, 255, 0.14); margin: 0 auto; max-width: 1240px; padding: 4rem clamp(1rem, 4vw, 3rem) 6rem; }
-.guide-heading h2 { font-size: clamp(2rem, 4vw, 4rem); letter-spacing: -0.08em; margin: 0; }
+.guide-heading h2 { font-size: clamp(2rem, 4vw, 4rem); letter-spacing: -0.08em; margin: 0; text-wrap: balance; }
 .guide-grid { display: grid; gap: 1px; grid-template-columns: repeat(3, 1fr); margin-top: 2.5rem; }
 .guide-grid article { background: rgba(30, 23, 57, 0.55); border-left: 1px solid var(--line); min-height: 190px; padding: 1.4rem; }
 .guide-grid article > span { color: var(--accent-bright); font-family: monospace; font-size: 0.7rem; }
@@ -145,7 +145,7 @@ a { color: inherit; text-decoration: none; }
 
 .admin-auth-page { align-items: center; display: flex; justify-content: center; min-height: 100dvh; padding: 1.5rem; }
 .admin-auth-card { background: rgba(23, 19, 44, 0.92); border: 1px solid var(--line-strong); max-width: 430px; padding: 2.2rem; width: 100%; }
-.admin-auth-card h1, .admin-page h1 { font-size: clamp(2.2rem, 6vw, 4.5rem); letter-spacing: -0.08em; margin: 0; }
+.admin-auth-card h1, .admin-page h1 { font-size: clamp(2.2rem, 6vw, 4.5rem); letter-spacing: -0.08em; margin: 0; text-wrap: balance; }
 .admin-auth-card > p:not(.eyebrow), .admin-intro { color: var(--muted); line-height: 1.6; }
 .admin-auth-card > a { color: var(--muted); display: inline-block; font-size: 0.8rem; margin-top: 1.5rem; text-decoration: underline; text-underline-offset: 4px; }
 .admin-login-form { display: grid; gap: 0.65rem; margin-top: 2rem; }

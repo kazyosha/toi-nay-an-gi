@@ -16,7 +16,7 @@ export default function RevealPanel({ dish, onDrawAgain }: RevealPanelProps) {
       <div className="reveal-content">
         <DishImage src={dish.imageUrl} alt={dish.name} className="reveal-image" width={600} height={600} sizes="(max-width: 640px) 100vw, 150px" />
         <div>
-          <p className="reveal-kicker">CASE OPENED</p>
+          <p className="reveal-kicker">ĐÃ MỞ HÒM</p>
           <h2>{dish.name}</h2>
           <p className="reveal-description">{dish.description || 'Một lựa chọn đáng thử cho tối nay.'}</p>
           {dish.spiceLevel > 0 && (

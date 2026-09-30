@@ -3,7 +3,7 @@ import Link from 'next/link'
 export default function AdminPage() {
   return (
     <main className="admin-page">
-      <p className="eyebrow">CONTROL ROOM</p>
+      <p className="eyebrow">TRUNG TÂM QUẢN TRỊ</p>
       <h1>Pool món ăn</h1>
       <p className="admin-intro">Quản lý những món đang xuất hiện trong vòng quay tối nay.</p>
       <Link className="admin-primary-link admin-primary-link-large" href="/admin/dishes" prefetch>
