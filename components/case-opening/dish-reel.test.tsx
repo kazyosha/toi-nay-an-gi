@@ -10,4 +10,10 @@ describe('DishReel', () => {
 
     await waitFor(() => expect(screen.getByTestId('dish-reel-track')).toHaveClass('reel-track-rolling'))
   })
+
+  it('renders a long continuous strip instead of leaving empty reel space', () => {
+    render(<DishReel items={[dish]} selectedId="pho" isDrawing={false} rollKey="draw-2" />)
+
+    expect(screen.getAllByRole('article').length).toBeGreaterThan(3)
+  })
 })
