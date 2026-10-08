@@ -226,6 +226,7 @@ a { color: inherit; text-decoration: none; }
 .status-active { color: #8fe3ca; }
 .status-inactive { color: var(--muted); }
 .table-actions, .form-actions { align-items: center; display: flex; gap: 0.5rem; }
+.table-actions .favorite-toggle { position: static; }
 .table-action { background: transparent; border: 1px solid var(--line); color: var(--muted); font-size: 0.68rem; padding: 0.45rem 0.7rem; }
 .table-action:hover, .table-action:focus-visible { border-color: var(--accent); color: var(--foreground); }
 .table-action-danger { border-color: rgba(255, 128, 150, 0.32); color: var(--danger); }

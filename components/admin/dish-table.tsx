@@ -4,6 +4,8 @@ import { CaretLeft, CaretRight, MagnifyingGlass, X } from '@phosphor-icons/react
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { dishCategories, type DishCategory, type DishRecord } from '@/lib/dishes/types'
+import { useFavorites } from '@/lib/favorites/use-favorites'
+import FavoriteToggle from '@/components/case-opening/favorite-toggle'
 import DeleteDishButton from './delete-dish-button'
 
 const categoryLabels: Record<DishRecord['category'], string> = { RICE: 'Cơm', NOODLE: 'Mì', SOUP: 'Bún phở', SNACK: 'Ăn vặt', DRINK: 'Đồ uống', OTHER: 'Khác' }
@@ -11,14 +13,18 @@ const categoryLabels: Record<DishRecord['category'], string> = { RICE: 'Cơm', N
 export default function DishTable({ dishes }: { dishes: DishRecord[] }) {
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState<DishCategory | ''>('')
+  const [favoriteMode, setFavoriteMode] = useState(false)
   const [sort, setSort] = useState('updated-desc')
   const [page, setPage] = useState(1)
   const pageSize = 5
+  const validDishIds = useMemo(() => dishes.map((dish) => dish.id), [dishes])
+  const { favoriteIds, toggle: toggleFavorite, isFavorite } = useFavorites(validDishIds)
 
   const filteredDishes = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase('vi-VN')
     const result = dishes.filter((dish) => {
       if (category && dish.category !== category) return false
+      if (favoriteMode && !favoriteIds.includes(dish.id)) return false
       if (!normalizedQuery) return true
       return `${dish.name} ${dish.slug}`.toLocaleLowerCase('vi-VN').includes(normalizedQuery)
     })
@@ -30,7 +36,7 @@ export default function DishTable({ dishes }: { dishes: DishRecord[] }) {
       if (sort === 'status') return Number(b.isActive) - Number(a.isActive) || a.name.localeCompare(b.name, 'vi')
       return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
     })
-  }, [category, dishes, query, sort])
+  }, [category, dishes, favoriteIds, favoriteMode, query, sort])
 
   const totalPages = Math.max(1, Math.ceil(filteredDishes.length / pageSize))
   const currentPage = Math.min(page, totalPages)
@@ -60,6 +66,12 @@ export default function DishTable({ dishes }: { dishes: DishRecord[] }) {
             {dishCategories.map((value) => <option key={value} value={value}>{categoryLabels[value]}</option>)}
           </select>
         </label>
+        <label className="admin-sort">Lọc món
+          <select aria-label="Lọc món" value={favoriteMode ? 'favorites' : 'all'} onChange={(event) => { setFavoriteMode(event.target.value === 'favorites'); setPage(1) }}>
+            <option value="all">Tất cả món</option>
+            <option value="favorites">Món yêu thích ({favoriteIds.length})</option>
+          </select>
+        </label>
       </div>
 
       <div className="dish-table-summary"><span>{filteredDishes.length} món trong kho</span><span>Tối đa {pageSize} món / trang</span></div>
@@ -71,7 +83,7 @@ export default function DishTable({ dishes }: { dishes: DishRecord[] }) {
             <td><div className="table-dish"><img src={dish.imageUrl} alt="" /><span>{dish.name}<small>{dish.slug}</small></span></div></td>
             <td>{categoryLabels[dish.category]}</td><td>{dish.weight}</td>
             <td><span className={`status-dot ${dish.isActive ? 'status-active' : 'status-inactive'}`}>{dish.isActive ? 'Đang bật' : 'Đã tắt'}</span></td>
-            <td><div className="table-actions"><Link className="table-action" href={`/admin/dishes/${dish.id}/edit`}>Sửa</Link><DeleteDishButton id={dish.id} /></div></td>
+            <td><div className="table-actions"><FavoriteToggle active={isFavorite(dish.id)} onToggle={() => toggleFavorite(dish.id)} label={dish.name} /><Link className="table-action" href={`/admin/dishes/${dish.id}/edit`}>Sửa</Link><DeleteDishButton id={dish.id} /></div></td>
           </tr>)}
         </tbody>
       </table>

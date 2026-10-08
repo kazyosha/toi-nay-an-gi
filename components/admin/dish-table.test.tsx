@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import DishTable from './dish-table'
 
@@ -21,6 +21,23 @@ const dishes = Array.from({ length: 6 }, (_, index) => ({
 }))
 
 describe('DishTable', () => {
+  it('toggles favorites immediately and filters the inventory to favorite dishes', async () => {
+    window.localStorage.clear()
+    render(<DishTable dishes={dishes} />)
+
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'Phở' } })
+    const favoriteButton = await screen.findByRole('button', { name: 'Thêm yêu thích Phở bò' })
+    fireEvent.click(favoriteButton)
+
+    expect(await screen.findByRole('button', { name: 'Bỏ yêu thích Phở bò' })).toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText('Lọc món'), { target: { value: 'favorites' } })
+
+    await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(2))
+    expect(screen.getByText('Phở bò')).toBeInTheDocument()
+    expect(screen.getByText('1 món trong kho')).toBeInTheDocument()
+  })
+
   it('shows five dishes per page and supports search and pagination', () => {
     render(<DishTable dishes={dishes} />)
 
