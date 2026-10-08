@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import type { DishCategory, DishRecord } from '@/lib/dishes/types'
+import type { DishCategory, DishRecord, MealTime } from '@/lib/dishes/types'
 
 type DishFormProps = { dish?: DishRecord | null }
 
@@ -12,11 +12,19 @@ const categoryOptions: Array<{ value: DishCategory; label: string }> = [
   { value: 'SNACK', label: 'Ăn vặt' }, { value: 'DRINK', label: 'Đồ uống' }, { value: 'OTHER', label: 'Khác' },
 ]
 
+const mealTimeOptions: Array<{ value: MealTime; label: string }> = [
+  { value: 'BREAKFAST', label: 'Sáng' },
+  { value: 'LUNCH', label: 'Trưa' },
+  { value: 'DINNER', label: 'Tối' },
+  { value: 'LATE_NIGHT', label: 'Đêm muộn' },
+]
+
 export default function DishForm({ dish }: DishFormProps) {
   const router = useRouter()
   const [form, setForm] = useState({
     name: dish?.name ?? '', slug: dish?.slug ?? '', imageUrl: dish?.imageUrl ?? '', category: dish?.category ?? 'RICE' as DishCategory,
     description: dish?.description ?? '', spiceLevel: String(dish?.spiceLevel ?? 0), weight: String(dish?.weight ?? 1), isActive: dish?.isActive ?? true,
+    isVegetarian: dish?.isVegetarian ?? false, priceLevel: String(dish?.priceLevel ?? 1), prepTimeMinutes: String(dish?.prepTimeMinutes ?? 30), mealTimes: dish?.mealTimes ?? ['DINNER' as MealTime],
   })
   const [error, setError] = useState('')
   const [pending, setPending] = useState(false)
@@ -24,6 +32,15 @@ export default function DishForm({ dish }: DishFormProps) {
 
   function update(key: string, value: string | boolean) {
     setForm((current) => ({ ...current, [key]: value }))
+  }
+
+  function toggleMealTime(value: MealTime) {
+    setForm((current) => ({
+      ...current,
+      mealTimes: current.mealTimes.includes(value)
+        ? current.mealTimes.filter((item) => item !== value)
+        : [...current.mealTimes, value],
+    }))
   }
 
   async function uploadImage(event: React.ChangeEvent<HTMLInputElement>) {
@@ -56,7 +73,7 @@ export default function DishForm({ dish }: DishFormProps) {
     setPending(true)
     setError('')
 
-    const payload = { ...form, spiceLevel: Number(form.spiceLevel), weight: Number(form.weight) }
+    const payload = { ...form, spiceLevel: Number(form.spiceLevel), weight: Number(form.weight), priceLevel: Number(form.priceLevel), prepTimeMinutes: Number(form.prepTimeMinutes) }
     const response = await fetch(dish ? `/api/admin/dishes/${dish.id}` : '/api/admin/dishes', {
       method: dish ? 'PATCH' : 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload),
     })
@@ -92,6 +109,10 @@ export default function DishForm({ dish }: DishFormProps) {
         <label>Độ cay (0-3)<input type="number" min="0" max="3" value={form.spiceLevel} onChange={(event) => update('spiceLevel', event.target.value)} /></label>
         <label>Trọng số<input type="number" min="1" max="1000" value={form.weight} onChange={(event) => update('weight', event.target.value)} /></label>
         <label className="checkbox-label"><input type="checkbox" checked={form.isActive} onChange={(event) => update('isActive', event.target.checked)} /> Cho phép xuất hiện trong pool</label>
+        <label className="checkbox-label"><input type="checkbox" checked={form.isVegetarian} onChange={(event) => update('isVegetarian', event.target.checked)} /> Món chay</label>
+        <label>Mức giá (1-3)<input type="number" min="1" max="3" value={form.priceLevel} onChange={(event) => update('priceLevel', event.target.value)} /></label>
+        <label>Thời gian chuẩn bị (phút)<input type="number" min="1" max="1440" value={form.prepTimeMinutes} onChange={(event) => update('prepTimeMinutes', event.target.value)} /></label>
+        <fieldset className="form-span-2 meal-time-field"><legend>Buổi ăn</legend><div className="meal-time-options">{mealTimeOptions.map((option) => <label key={option.value} className="checkbox-label"><input type="checkbox" checked={form.mealTimes.includes(option.value)} onChange={() => toggleMealTime(option.value)} /> {option.label}</label>)}</div></fieldset>
         <label className="form-span-2">Mô tả<textarea rows={4} value={form.description} onChange={(event) => update('description', event.target.value)} /></label>
       </div>
       {error && <p className="admin-form-error" role="alert">{error}</p>}

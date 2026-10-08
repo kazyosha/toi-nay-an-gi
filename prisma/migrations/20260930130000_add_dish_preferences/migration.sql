@@ -1,0 +1,9 @@
+-- CreateEnum
+CREATE TYPE "MealTime" AS ENUM ('BREAKFAST', 'LUNCH', 'DINNER', 'LATE_NIGHT');
+
+-- AlterTable
+ALTER TABLE "Dish"
+ADD COLUMN "isVegetarian" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN "priceLevel" INTEGER NOT NULL DEFAULT 1,
+ADD COLUMN "prepTimeMinutes" INTEGER NOT NULL DEFAULT 30,
+ADD COLUMN "mealTimes" "MealTime"[] NOT NULL DEFAULT ARRAY['DINNER']::"MealTime"[];

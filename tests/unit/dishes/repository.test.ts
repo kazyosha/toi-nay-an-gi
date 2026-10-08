@@ -23,6 +23,10 @@ const input = {
   description: 'Nước dùng thơm.',
   spiceLevel: 0,
   weight: 2,
+  isVegetarian: false,
+  priceLevel: 1,
+  prepTimeMinutes: 30,
+  mealTimes: ['DINNER' as const],
   isActive: true,
 }
 
@@ -45,6 +49,10 @@ describe('dish repository', () => {
         description: true,
         spiceLevel: true,
         weight: true,
+        isVegetarian: true,
+        priceLevel: true,
+        prepTimeMinutes: true,
+        mealTimes: true,
       },
     })
   })
@@ -65,8 +73,40 @@ describe('dish repository', () => {
         description: true,
         spiceLevel: true,
         weight: true,
+        isVegetarian: true,
+        priceLevel: true,
+        prepTimeMinutes: true,
+        mealTimes: true,
       },
     })
+  })
+
+  it('combines advanced pool filters and ID constraints', async () => {
+    prismaMock.dish.findMany.mockResolvedValue([])
+
+    await listActiveDishes({
+      categories: ['RICE'],
+      isVegetarian: true,
+      priceLevels: [1, 2],
+      maxPrepTimeMinutes: 45,
+      mealTimes: ['LUNCH'],
+      maxSpiceLevel: 1,
+      includeDishIds: ['dish-1'],
+      excludeDishIds: ['dish-2'],
+    })
+
+    expect(prismaMock.dish.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: {
+        isActive: true,
+        category: { in: ['RICE'] },
+        isVegetarian: true,
+        priceLevel: { in: [1, 2] },
+        prepTimeMinutes: { lte: 45 },
+        mealTimes: { hasSome: ['LUNCH'] },
+        spiceLevel: { lte: 1 },
+        AND: [{ id: { in: ['dish-1'] } }, { id: { notIn: ['dish-2'] } }],
+      },
+    }))
   })
 
   it('applies admin search and status filters', async () => {

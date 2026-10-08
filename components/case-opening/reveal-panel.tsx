@@ -1,13 +1,16 @@
 import { ArrowClockwise, Fire } from '@phosphor-icons/react'
 import type { DishRecord } from '@/lib/dishes/types'
 import DishImage from './dish-image'
+import FavoriteToggle from './favorite-toggle'
 
 type RevealPanelProps = {
-  dish: Pick<DishRecord, 'name' | 'description' | 'imageUrl' | 'spiceLevel'> | null
+  dish: Pick<DishRecord, 'id' | 'name' | 'description' | 'imageUrl' | 'spiceLevel'> | null
   onDrawAgain: () => void
+  isFavorite?: boolean
+  onFavoriteToggle?: () => void
 }
 
-export default function RevealPanel({ dish, onDrawAgain }: RevealPanelProps) {
+export default function RevealPanel({ dish, onDrawAgain, isFavorite = false, onFavoriteToggle }: RevealPanelProps) {
   if (!dish) return null
 
   return (
@@ -17,7 +20,7 @@ export default function RevealPanel({ dish, onDrawAgain }: RevealPanelProps) {
         <DishImage src={dish.imageUrl} alt={dish.name} className="reveal-image" width={600} height={600} sizes="(max-width: 640px) 100vw, 150px" />
         <div>
           <p className="reveal-kicker">ĐÃ MỞ HÒM</p>
-          <h2>{dish.name}</h2>
+          <div className="reveal-title-row"><h2>{dish.name}</h2>{onFavoriteToggle && <FavoriteToggle active={isFavorite} onToggle={onFavoriteToggle} label={dish.name} />}</div>
           <p className="reveal-description">{dish.description || 'Một lựa chọn đáng thử cho tối nay.'}</p>
           {dish.spiceLevel > 0 && (
             <p className="spice-level" aria-label={`Độ cay ${dish.spiceLevel} trên 3`}>

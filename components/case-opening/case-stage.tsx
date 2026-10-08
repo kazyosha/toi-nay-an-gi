@@ -1,19 +1,23 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { ShieldCheck, Sparkle } from '@phosphor-icons/react'
-import type { DishCategory, DishRecord } from '@/lib/dishes/types'
+import type { DishRecord, DrawFilters } from '@/lib/dishes/types'
 import CategoryFilter from './category-filter'
+import AdvancedFilters from './advanced-filters'
 import DishReel from './dish-reel'
 import RevealPanel from './reveal-panel'
 import { REEL_SPIN_DURATION_MS } from './reel-motion'
 import CelebrationModal from './celebration-modal'
 import { startSpinSound } from '@/lib/audio/celebration-sound'
+import { useDrawHistory } from '@/lib/history/use-draw-history'
+import { useFavorites } from '@/lib/favorites/use-favorites'
+import DrawHistory from './draw-history'
 
 type DrawResponse = {
   reelItems: Array<Pick<DishRecord, 'id' | 'name' | 'imageUrl' | 'category'>>
-  selectedDish: Pick<DishRecord, 'id' | 'name' | 'imageUrl' | 'description' | 'spiceLevel'>
+  selectedDish: Pick<DishRecord, 'id' | 'name' | 'imageUrl' | 'category' | 'description' | 'spiceLevel'>
 }
 
 type InitialDish = Pick<DishRecord, 'id' | 'name' | 'imageUrl' | 'category' | 'description' | 'spiceLevel'>
@@ -29,18 +33,29 @@ function makePreviewDraw(dishes: InitialDish[]): DrawResponse | null {
 }
 
 export default function CaseStage({ initialDishes = [] }: { initialDishes?: InitialDish[] }) {
-  const [categories, setCategories] = useState<DishCategory[]>([])
+  const [filters, setFilters] = useState<DrawFilters>({ categories: [], priceLevels: [], mealTimes: [], includeDishIds: [], excludeDishIds: [] })
   const [draw, setDraw] = useState<DrawResponse | null>(() => makePreviewDraw(initialDishes))
   const [status, setStatus] = useState<'idle' | 'drawing' | 'revealed' | 'error'>('idle')
   const [celebrationOpen, setCelebrationOpen] = useState(false)
   const [error, setError] = useState('')
   const [spinSequence, setSpinSequence] = useState(0)
+  const [noRepeatToday, setNoRepeatToday] = useState(false)
+  const [favoritesOnly, setFavoritesOnly] = useState(false)
+  const { history, todayIds, add: addHistory, clear: clearHistory } = useDrawHistory()
+  const validDishIds = useMemo(() => initialDishes.length ? initialDishes.map((dish) => dish.id) : undefined, [initialDishes])
+  const { favoriteIds, toggle: toggleFavorite, isFavorite } = useFavorites(validDishIds)
   const previewController = useRef<AbortController | null>(null)
-  const previousCategories = useRef<string | null>(null)
+  const initialFilters = useRef(filters)
+  const previousFilters = useRef<string | null>(null)
   const statusRef = useRef(status)
   const reelKey = status === 'drawing'
     ? `${spinSequence}-${draw?.reelItems.map((item, index) => `${item.id}-${index}`).join('|') ?? ''}`
     : ''
+  const effectiveFilters = useMemo(() => ({
+    ...filters,
+    includeDishIds: favoritesOnly ? (favoriteIds.length ? favoriteIds : ['__no_favorite_match__']) : [],
+    excludeDishIds: noRepeatToday ? todayIds : [],
+  }), [favoriteIds, favoritesOnly, filters, noRepeatToday, todayIds])
 
   useEffect(() => {
     statusRef.current = status
@@ -55,7 +70,7 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
     fetch('/api/draw', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ categories: [] }),
+      body: JSON.stringify(initialFilters.current),
       signal: controller.signal,
     }).then(async (response) => {
       if (!response.ok) return
@@ -67,12 +82,13 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
   }, [initialDishes.length])
 
   useEffect(() => {
-    const categoryKey = categories.join('|')
-    if (previousCategories.current === null) {
-      previousCategories.current = categoryKey
+    const filterKey = JSON.stringify(effectiveFilters)
+    if (previousFilters.current === null) {
+      previousFilters.current = filterKey
       return
     }
-    previousCategories.current = categoryKey
+    if (previousFilters.current === filterKey) return
+    previousFilters.current = filterKey
     if (statusRef.current === 'drawing') return
 
     previewController.current?.abort()
@@ -85,7 +101,7 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
     fetch('/api/draw', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ categories }),
+      body: JSON.stringify(effectiveFilters),
       signal: controller.signal,
     }).then(async (response) => {
       const body = await response.json()
@@ -100,7 +116,7 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
     }).catch(() => undefined)
 
     return () => controller.abort()
-  }, [categories])
+  }, [effectiveFilters])
 
   useEffect(() => {
     if (status !== 'drawing') return
@@ -118,7 +134,7 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
       const response = await fetch('/api/draw', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ categories }),
+        body: JSON.stringify(effectiveFilters),
       })
       const body = await response.json()
 
@@ -132,6 +148,11 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
       await new Promise((resolve) => window.setTimeout(resolve, REEL_SPIN_DURATION_MS))
       setStatus('revealed')
       setCelebrationOpen(true)
+      try {
+        addHistory({ drawnAt: new Date().toISOString(), dish: body.selectedDish, filters: effectiveFilters })
+      } catch {
+        // A storage permission issue must not hide a successful draw.
+      }
     } catch {
       setStatus('error')
       setError('Kết nối gặp sự cố. Bạn thử lại nhé.')
@@ -162,20 +183,24 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
 
         <div className="case-stage-panel">
           <div className="case-stage-topline"><span>MỞ HÒM // NGẪU NHIÊN</span><span>QUAY CÔNG BẰNG</span></div>
-          <DishReel items={draw?.reelItems ?? []} selectedId={draw?.selectedDish.id ?? ''} isDrawing={status === 'drawing'} rollKey={reelKey} />
-          <div className="stage-meta"><span>NHÓM MÓN: {categories.length ? `${categories.length} nhóm` : 'TẤT CẢ MÓN'}</span><span>NGẪU NHIÊN THEO TRỌNG SỐ</span></div>
+          <DishReel items={draw?.reelItems ?? []} selectedId={draw?.selectedDish.id ?? ''} isDrawing={status === 'drawing'} rollKey={reelKey} favoriteIds={favoriteIds} onFavoriteToggle={toggleFavorite} />
+          <div className="stage-meta"><span>NHÓM MÓN: {filters.categories.length ? `${filters.categories.length} nhóm` : 'TẤT CẢ MÓN'}</span><span>NGẪU NHIÊN THEO TRỌNG SỐ</span></div>
         </div>
 
         <div className="action-zone">
-          <CategoryFilter selected={categories} onChange={setCategories} />
+          <CategoryFilter selected={filters.categories} onChange={(categories) => setFilters((current) => ({ ...current, categories }))} />
+          <AdvancedFilters value={filters} disabled={status === 'drawing'} onChange={(advanced) => setFilters((current) => ({ ...current, ...advanced }))} />
+          <label className="no-repeat-toggle"><input type="checkbox" checked={noRepeatToday} disabled={status === 'drawing'} onChange={(event) => setNoRepeatToday(event.target.checked)} /> Không lặp món đã quay hôm nay <small>({todayIds.length})</small></label>
+          <label className="no-repeat-toggle"><input type="checkbox" checked={favoritesOnly} disabled={status === 'drawing'} onChange={(event) => setFavoritesOnly(event.target.checked)} /> Chỉ quay món yêu thích <small>({favoriteIds.length})</small></label>
           <button type="button" className="primary-button" onClick={openCase} disabled={status === 'drawing'}>
             {status === 'drawing' ? 'ĐANG QUAY...' : 'MỞ HÒM'}
           </button>
-          {status === 'error' && <p className="error-message" role="alert">{error}</p>}
-          <p className="action-hint">Không có món trùng nhau trong lần quay này. Kết quả được chọn từ danh sách admin.</p>
+          {status === 'error' && <div className="error-stack"><p className="error-message" role="alert">{error}</p>{noRepeatToday && <button type="button" className="table-action" onClick={() => setNoRepeatToday(false)}>Quay lại toàn bộ món</button>}{favoritesOnly && <button type="button" className="table-action" onClick={() => setFavoritesOnly(false)}>Tắt lọc yêu thích</button>}</div>}
+          <p className="action-hint">Bộ lọc cập nhật ngay lập tức. Kết quả được chọn từ danh sách món đang bật.</p>
         </div>
 
-        <RevealPanel dish={status === 'revealed' ? draw?.selectedDish ?? null : null} onDrawAgain={openCase} />
+        <RevealPanel dish={status === 'revealed' ? draw?.selectedDish ?? null : null} onDrawAgain={openCase} isFavorite={draw?.selectedDish ? isFavorite(draw.selectedDish.id) : false} onFavoriteToggle={draw?.selectedDish ? () => toggleFavorite(draw.selectedDish.id) : undefined} />
+        <DrawHistory history={history} onClear={clearHistory} favoriteIds={favoriteIds} onFavoriteToggle={toggleFavorite} />
         {celebrationOpen && status === 'revealed' && draw?.selectedDish && (
           <CelebrationModal dish={draw.selectedDish} onClose={() => setCelebrationOpen(false)} />
         )}

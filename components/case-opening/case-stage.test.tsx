@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import CaseStage from './case-stage'
+import { drawHistoryStorageKey } from '@/lib/history/storage'
 
 const dish = {
   id: 'pho',
@@ -27,6 +28,7 @@ describe('CaseStage', () => {
   const initialDishes = [{ ...dish, category: 'SOUP' as const }]
 
   beforeEach(() => {
+    window.localStorage.clear()
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ reelItems: Array.from({ length: 9 }, () => dish), selectedDish: dish }),
@@ -49,7 +51,7 @@ describe('CaseStage', () => {
     await waitFor(() => expect(within(screen.getByLabelText('Reel món ăn')).getAllByRole('article').length).toBeGreaterThan(0))
     expect(fetch).toHaveBeenCalledWith('/api/draw', expect.objectContaining({
       method: 'POST',
-      body: JSON.stringify({ categories: [] }),
+      body: JSON.stringify({ categories: [], priceLevels: [], mealTimes: [], includeDishIds: [], excludeDishIds: [] }),
     }))
   })
 
@@ -76,7 +78,7 @@ describe('CaseStage', () => {
 
     await waitFor(() => expect(fetch).toHaveBeenCalledWith('/api/draw', expect.objectContaining({
       method: 'POST',
-      body: JSON.stringify({ categories: ['SOUP'] }),
+      body: JSON.stringify({ categories: ['SOUP'], priceLevels: [], mealTimes: [], includeDishIds: [], excludeDishIds: [] }),
     })))
   })
 
@@ -87,7 +89,7 @@ describe('CaseStage', () => {
 
     await waitFor(() => expect(fetch).toHaveBeenCalledWith('/api/draw', expect.objectContaining({
       method: 'POST',
-      body: JSON.stringify({ categories: ['SOUP'] }),
+      body: JSON.stringify({ categories: ['SOUP'], priceLevels: [], mealTimes: [], includeDishIds: [], excludeDishIds: [] }),
     })))
   })
 
@@ -109,5 +111,31 @@ describe('CaseStage', () => {
     fireEvent.click(screen.getByRole('button', { name: /mở hòm/i }))
 
     await waitFor(() => expect(screen.getByText('Chưa có món phù hợp để mở hòm.')).toBeInTheDocument())
+  })
+
+  it('sends today history IDs when no-repeat mode is enabled', async () => {
+    window.localStorage.setItem(drawHistoryStorageKey, JSON.stringify([{
+      drawnAt: new Date().toISOString(),
+      dish: { id: 'pho', name: 'Phở bò', imageUrl: dish.imageUrl, category: 'SOUP' },
+      filters: { categories: [], priceLevels: [], mealTimes: [], excludeDishIds: [] },
+    }]))
+
+    render(<CaseStage initialDishes={initialDishes} />)
+    fireEvent.click(screen.getByLabelText(/Không lặp món đã quay hôm nay/))
+
+    await waitFor(() => expect(fetch).toHaveBeenCalledWith('/api/draw', expect.objectContaining({
+      body: expect.stringContaining('"excludeDishIds":["pho"]'),
+    })))
+  })
+
+  it('toggles a favorite on the reel and can filter to favorites only', async () => {
+    render(<CaseStage initialDishes={initialDishes} />)
+    fireEvent.click(screen.getAllByRole('button', { name: 'Thêm yêu thích Phở bò' })[0])
+    expect(screen.getAllByRole('button', { name: 'Bỏ yêu thích Phở bò' }).length).toBeGreaterThan(0)
+    fireEvent.click(screen.getByLabelText(/Chỉ quay món yêu thích/))
+
+    await waitFor(() => expect(fetch).toHaveBeenCalledWith('/api/draw', expect.objectContaining({
+      body: expect.stringContaining('"includeDishIds":["pho"]'),
+    })))
   })
 })

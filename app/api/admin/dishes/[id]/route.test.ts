@@ -10,7 +10,7 @@ vi.mock('@/lib/dishes/repository', () => ({ updateDish: updateDishMock, deleteDi
 import { DELETE, PATCH } from './route'
 
 const input = {
-  name: 'Phở bò', slug: 'pho-bo', imageUrl: 'https://images.example.com/pho.jpg', category: 'SOUP', description: 'Nước dùng thơm.', spiceLevel: 0, weight: 2, isActive: true,
+  name: 'Phở bò', slug: 'pho-bo', imageUrl: 'https://images.example.com/pho.jpg', category: 'SOUP', description: 'Nước dùng thơm.', spiceLevel: 0, weight: 2, isVegetarian: false, priceLevel: 1, prepTimeMinutes: 30, mealTimes: ['DINNER'], isActive: true,
 }
 
 describe('admin dish item routes', () => {
