@@ -177,7 +177,7 @@ export default function CaseStage({ initialDishes = [] }: { initialDishes?: Init
       <section id="mo-hom" className="hero-section" aria-labelledby="hero-title">
         <div className="hero-copy">
           <p className="eyebrow">HÒM MÓN ĂN <span>01</span></p>
-          <h1 id="hero-title">Để chiếc hòm quyết định <em>bữa tối.</em></h1>
+          <h1 id="hero-title">Để chiếc hòm quyết định <em>bữa ăn.</em></h1>
           <p className="hero-description">Một vòng quay, một món ăn. Chọn nhóm món và mở hòm để thoát khỏi câu hỏi quen thuộc.</p>
         </div>
 

@@ -54,7 +54,7 @@ export default function CelebrationModal({ dish, onClose }: CelebrationModalProp
         <p className="celebration-title">Chúc mừng!</p>
         <DishImage src={dish.imageUrl} alt={dish.name} className="celebration-image" width={150} height={150} />
         <h2>{dish.name}</h2>
-        <p className="celebration-description">{dish.description || 'Một lựa chọn đáng thử cho tối nay.'}</p>
+        <p className="celebration-description">{dish.description || 'Một lựa chọn đáng thử cho bữa ăn này.'}</p>
         <button type="button" className="primary-button celebration-action" onClick={onClose}>Đóng</button>
       </section>
     </div>

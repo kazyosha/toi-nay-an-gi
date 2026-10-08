@@ -3,7 +3,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Tối nay ăn gì',
-  description: 'Mở hòm để chọn món ăn tối nay.',
+  description: 'Mở hòm để chọn món cho bữa ăn trong ngày.',
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

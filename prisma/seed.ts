@@ -79,7 +79,7 @@ export const seedDishes: readonly SeedDish[] = [
   dish('Bánh canh cá lóc', 'banh-canh-ca-loc', 'SOUP', 'Bánh canh cá lóc miền Tây với nước dùng ngọt thanh.', ['BREAKFAST', 'LUNCH', 'DINNER'], { weight: 2, priceLevel: 2, prepTimeMinutes: 30 }),
   dish('Cháo cá lóc', 'chao-ca-loc', 'SOUP', 'Cháo cá lóc nóng ấm, rắc hành tiêu và rau đắng.', ['BREAKFAST', 'LATE_NIGHT'], { weight: 1, priceLevel: 1, prepTimeMinutes: 35 }),
   dish('Cháo lòng', 'chao-long', 'SOUP', 'Cháo gạo rang với lòng heo, tiêu và rau thơm.', ['BREAKFAST', 'LATE_NIGHT'], { weight: 2, priceLevel: 1, prepTimeMinutes: 35 }),
-  dish('Cháo sườn', 'chao-suon', 'SOUP', 'Món cháo sườn mềm mịn, êm bụng cho buổi tối.', ['BREAKFAST', 'LATE_NIGHT'], { weight: 1, priceLevel: 1, prepTimeMinutes: 30 }),
+  dish('Cháo sườn', 'chao-suon', 'SOUP', 'Món cháo sườn mềm mịn, êm bụng cho bữa ăn nhẹ.', ['BREAKFAST', 'LATE_NIGHT'], { weight: 1, priceLevel: 1, prepTimeMinutes: 30 }),
   dish('Canh chua cá linh', 'canh-chua-ca-linh', 'SOUP', 'Canh chua cá linh với bông điên điển và me chua.', ['LUNCH', 'DINNER'], { weight: 2, spiceLevel: 1, priceLevel: 2, prepTimeMinutes: 35 }),
   dish('Lẩu mắm miền Tây', 'lau-mam-mien-tay', 'SOUP', 'Lẩu mắm đậm đà với cá, tôm, thịt và rau đồng.', ['LUNCH', 'DINNER', 'LATE_NIGHT'], { weight: 3, spiceLevel: 1, priceLevel: 3, prepTimeMinutes: 45 }),
   dish('Lẩu gà lá giang', 'lau-ga-la-giang', 'SOUP', 'Lẩu gà chua dịu lá giang, ăn cùng rau và bún.', ['LUNCH', 'DINNER'], { weight: 2, spiceLevel: 1, priceLevel: 3, prepTimeMinutes: 45 }),

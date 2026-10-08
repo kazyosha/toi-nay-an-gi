@@ -21,7 +21,7 @@ export default function RevealPanel({ dish, onDrawAgain, isFavorite = false, onF
         <div>
           <p className="reveal-kicker">ĐÃ MỞ HÒM</p>
           <div className="reveal-title-row"><h2>{dish.name}</h2>{onFavoriteToggle && <FavoriteToggle active={isFavorite} onToggle={onFavoriteToggle} label={dish.name} />}</div>
-          <p className="reveal-description">{dish.description || 'Một lựa chọn đáng thử cho tối nay.'}</p>
+          <p className="reveal-description">{dish.description || 'Một lựa chọn đáng thử cho bữa ăn này.'}</p>
           {dish.spiceLevel > 0 && (
             <p className="spice-level" aria-label={`Độ cay ${dish.spiceLevel} trên 3`}>
               {Array.from({ length: dish.spiceLevel }).map((_, index) => <Fire key={index} weight="fill" aria-hidden="true" />)}
